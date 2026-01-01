@@ -31,9 +31,7 @@ export default function AuthErrorPage() {
             borderColor: 'grey.200',
           }}
         >
-          <ErrorOutlineIcon
-            sx={{ fontSize: 64, color: 'error.main', mb: 2 }}
-          />
+          <ErrorOutlineIcon sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
 
           <Typography variant="h5" component="h1" gutterBottom fontWeight={500}>
             인증 오류

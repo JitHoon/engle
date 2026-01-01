@@ -56,9 +56,7 @@ export default function LoginPage() {
           </Box>
 
           {showForgotPassword ? (
-            <ForgotPasswordForm
-              onBack={() => setShowForgotPassword(false)}
-            />
+            <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
           ) : (
             <LoginForm
               onSuccess={handleLoginSuccess}

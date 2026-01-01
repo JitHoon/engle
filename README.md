@@ -93,25 +93,25 @@ npm run dev
 import { useAuth } from '@/contexts';
 
 function MyComponent() {
-  const { 
-    signIn,           // 로그인
-    signUp,           // 회원가입
-    signOut,          // 로그아웃
-    resetPassword,    // 비밀번호 재설정 이메일 발송
-    user,             // 현재 사용자 정보
-    isAuthenticated,  // 로그인 여부
-    isLoading,        // 로딩 상태
-    error,            // 에러 메시지
+  const {
+    signIn, // 로그인
+    signUp, // 회원가입
+    signOut, // 로그아웃
+    resetPassword, // 비밀번호 재설정 이메일 발송
+    user, // 현재 사용자 정보
+    isAuthenticated, // 로그인 여부
+    isLoading, // 로딩 상태
+    error, // 에러 메시지
   } = useAuth();
 
   // 로그인
   await signIn({ email: 'user@example.com', password: 'password' });
 
   // 회원가입
-  await signUp({ 
-    email: 'user@example.com', 
+  await signUp({
+    email: 'user@example.com',
     password: 'password',
-    displayName: '홍길동'
+    displayName: '홍길동',
   });
 
   // 비밀번호 재설정 이메일 발송
@@ -187,11 +187,34 @@ import { teslaColors } from '@/lib';
 ## 스크립트
 
 ```bash
-npm run dev      # 개발 서버 실행
-npm run build    # 프로덕션 빌드
-npm run start    # 프로덕션 서버 실행
-npm run lint     # ESLint 검사
+npm run dev          # 개발 서버 실행
+npm run build        # 프로덕션 빌드
+npm run start        # 프로덕션 서버 실행
+npm run lint         # ESLint 검사
+npm run lint:fix     # ESLint 자동 수정
+npm run format       # Prettier로 전체 프로젝트 포맷팅
+npm run format:check # 포맷팅 확인 (CI/CD용)
 ```
+
+## 코드 포맷팅
+
+이 프로젝트는 일관된 코드 스타일을 유지하기 위해 **Prettier**와 **ESLint**를 사용합니다.
+
+### 자동 포맷팅
+
+```bash
+# 전체 프로젝트 포맷팅
+npm run format
+
+# 포맷팅 확인
+npm run format:check
+```
+
+### VS Code 설정
+
+VS Code를 사용하는 경우, 저장 시 자동으로 포맷팅됩니다. **Prettier** 확장 프로그램을 설치하세요.
+
+자세한 내용은 [FORMATTING.md](./FORMATTING.md)를 참고하세요.
 
 ## 라이선스
 

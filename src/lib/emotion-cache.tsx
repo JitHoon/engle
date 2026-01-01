@@ -5,7 +5,11 @@ import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
 import { useServerInsertedHTML } from 'next/navigation';
 
-export default function EmotionRegistry({ children }: { children: React.ReactNode }) {
+export default function EmotionRegistry({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [cache] = useState(() => {
     const cache = createCache({ key: 'mui', prepend: true });
     cache.compat = true;
@@ -37,4 +41,3 @@ export default function EmotionRegistry({ children }: { children: React.ReactNod
 
   return <CacheProvider value={cache}>{children}</CacheProvider>;
 }
-

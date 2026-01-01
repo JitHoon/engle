@@ -1,5 +1,3 @@
-export { default as ExampleForm } from './ExampleForm';
-
 // Auth Components
 export {
   LoginForm,

@@ -13,12 +13,12 @@ export const colors = {
   // Neutral Colors
   black: {
     pure: '#000000',
-    dark: '#171A20', 
-    charcoal: '#393C41', 
+    dark: '#171A20',
+    charcoal: '#393C41',
   },
 
   gray: {
-    900: '#171A20', 
+    900: '#171A20',
     800: '#212121',
     700: '#393C41',
     600: '#5C5E62',
@@ -56,7 +56,7 @@ export const colors = {
   },
 
   error: {
-    main: '#E31937', 
+    main: '#E31937',
     light: '#FF4D5E',
     dark: '#B30000',
   },

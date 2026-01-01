@@ -96,10 +96,7 @@ export default function ResetPasswordPage() {
             <Alert severity="success" sx={{ mb: 2 }}>
               비밀번호가 성공적으로 변경되었습니다!
             </Alert>
-            <Button
-              variant="contained"
-              onClick={() => router.push('/login')}
-            >
+            <Button variant="contained" onClick={() => router.push('/login')}>
               로그인 페이지로 이동
             </Button>
           </Paper>
@@ -145,7 +142,11 @@ export default function ResetPasswordPage() {
           </Box>
 
           {error && (
-            <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
+            <Alert
+              severity="error"
+              onClose={() => setError(null)}
+              sx={{ mb: 2 }}
+            >
               {error}
             </Alert>
           )}

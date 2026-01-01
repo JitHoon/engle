@@ -41,9 +41,7 @@ export default function SignUpPage() {
             >
               Engle
             </Typography>
-            <Typography color="text.secondary">
-              새 계정을 만드세요
-            </Typography>
+            <Typography color="text.secondary">새 계정을 만드세요</Typography>
           </Box>
 
           <SignUpForm />

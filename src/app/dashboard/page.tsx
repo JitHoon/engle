@@ -41,7 +41,11 @@ export default function DashboardPage() {
     return (
       <Container maxWidth="md">
         <Box sx={{ py: 4 }}>
-          <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 1 }} />
+          <Skeleton
+            variant="rectangular"
+            height={200}
+            sx={{ borderRadius: 1 }}
+          />
         </Box>
       </Container>
     );
@@ -89,7 +93,12 @@ export default function DashboardPage() {
           <Stack direction="row" spacing={3} alignItems="center">
             <Avatar
               alt={user?.displayName || 'User'}
-              sx={{ width: 80, height: 80, bgcolor: 'primary.main', fontSize: '2rem' }}
+              sx={{
+                width: 80,
+                height: 80,
+                bgcolor: 'primary.main',
+                fontSize: '2rem',
+              }}
             >
               {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
             </Avatar>
@@ -129,8 +138,8 @@ export default function DashboardPage() {
           </Typography>
           <Typography color="text.secondary">
             Supabase 이메일 인증이 성공적으로 구현되었습니다.
-            <br />
-            이 페이지는 로그인한 사용자만 접근할 수 있는 보호된 페이지입니다.
+            <br />이 페이지는 로그인한 사용자만 접근할 수 있는 보호된
+            페이지입니다.
           </Typography>
         </Paper>
       </Box>

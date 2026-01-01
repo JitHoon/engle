@@ -49,7 +49,8 @@ export function mapSupabaseUser(user: User | null): AuthUser | null {
   return {
     id: user.id,
     email: user.email || null,
-    displayName: metadata.display_name || metadata.full_name || metadata.name || null,
+    displayName:
+      metadata.display_name || metadata.full_name || metadata.name || null,
     emailVerified: user.email_confirmed_at !== null,
   };
 }
