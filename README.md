@@ -10,7 +10,7 @@ Next.js 14+ 기반 웹 애플리케이션 프로젝트입니다.
 - **Server State**: TanStack Query (React Query)
 - **UI Library**: MUI (Material-UI) - Tesla 스타일 테마
 - **Form Handling**: React Hook Form
-- **Authentication**: Supabase Auth (Google OAuth)
+- **Authentication**: Supabase Auth (Email/Password)
 
 ## 프로젝트 구조
 
@@ -18,15 +18,18 @@ Next.js 14+ 기반 웹 애플리케이션 프로젝트입니다.
 src/
 ├── app/                      # Next.js App Router 페이지
 │   ├── auth/                 # 인증 관련 라우트
-│   │   ├── callback/         # OAuth 콜백 처리
-│   │   └── error/            # 인증 에러 페이지
+│   │   ├── error/            # 인증 에러 페이지
+│   │   └── reset-password/   # 비밀번호 재설정 페이지
 │   ├── login/                # 로그인 페이지
+│   ├── signup/               # 회원가입 페이지
 │   ├── dashboard/            # 보호된 대시보드 페이지
 │   ├── layout.tsx            # 루트 레이아웃
 │   └── page.tsx              # 메인 페이지
 ├── components/               # 재사용 가능한 컴포넌트
 │   ├── auth/                 # 인증 관련 컴포넌트
-│   │   ├── GoogleLoginButton.tsx
+│   │   ├── LoginForm.tsx
+│   │   ├── SignUpForm.tsx
+│   │   ├── ForgotPasswordForm.tsx
 │   │   ├── UserProfile.tsx
 │   │   ├── AuthStatus.tsx
 │   │   └── ProtectedRoute.tsx
@@ -68,11 +71,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ### 3. Supabase 프로젝트 설정
 
 1. [Supabase Dashboard](https://supabase.com/dashboard)에서 새 프로젝트 생성
-2. **Settings > API**에서 Project URL과 anon key 복사
-3. **Authentication > Providers**에서 Google 활성화
-4. Google Cloud Console에서 OAuth 2.0 자격 증명 생성
-5. Supabase에 Google Client ID와 Secret 입력
-6. Redirect URL 설정: `https://your-project-id.supabase.co/auth/v1/callback`
+2. **Settings > API**에서:
+   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
+   - `anon public` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+3. **Authentication > Providers**에서 Email 활성화 (기본 활성화됨)
+4. **Authentication > URL Configuration**에서 Site URL 설정
 
 ### 4. 개발 서버 실행
 
@@ -84,26 +87,35 @@ npm run dev
 
 ## 인증 기능
 
-### Google OAuth 로그인
+### 이메일/비밀번호 인증
 
 ```typescript
 import { useAuth } from '@/contexts';
 
 function MyComponent() {
-  const { signInWithGoogle, signOut, user, isAuthenticated } = useAuth();
+  const { 
+    signIn,           // 로그인
+    signUp,           // 회원가입
+    signOut,          // 로그아웃
+    resetPassword,    // 비밀번호 재설정 이메일 발송
+    user,             // 현재 사용자 정보
+    isAuthenticated,  // 로그인 여부
+    isLoading,        // 로딩 상태
+    error,            // 에러 메시지
+  } = useAuth();
 
-  return (
-    <div>
-      {isAuthenticated ? (
-        <>
-          <p>Welcome, {user?.displayName}</p>
-          <button onClick={signOut}>로그아웃</button>
-        </>
-      ) : (
-        <button onClick={signInWithGoogle}>Google로 로그인</button>
-      )}
-    </div>
-  );
+  // 로그인
+  await signIn({ email: 'user@example.com', password: 'password' });
+
+  // 회원가입
+  await signUp({ 
+    email: 'user@example.com', 
+    password: 'password',
+    displayName: '홍길동'
+  });
+
+  // 비밀번호 재설정 이메일 발송
+  await resetPassword('user@example.com');
 }
 ```
 
@@ -114,32 +126,36 @@ function MyComponent() {
 ### 컴포넌트 사용
 
 ```typescript
-import { GoogleLoginButton, AuthStatus, UserProfile } from '@/components';
+import { LoginForm, SignUpForm, AuthStatus, UserProfile } from '@/components';
 
 // 헤더에서 인증 상태 표시
 <AuthStatus />
 
-// 로그인 버튼
-<GoogleLoginButton />
+// 로그인 폼
+<LoginForm onSuccess={() => router.push('/dashboard')} />
+
+// 회원가입 폼
+<SignUpForm />
 
 // 사용자 프로필 (드롭다운 메뉴 포함)
 <UserProfile />
 ```
 
-## Supabase 설정 가이드
+## Supabase 환경 변수 확인 방법
 
-### 필요한 정보
+### NEXT_PUBLIC_SUPABASE_URL
 
-1. **NEXT_PUBLIC_SUPABASE_URL**: Supabase 프로젝트 URL
-2. **NEXT_PUBLIC_SUPABASE_ANON_KEY**: Supabase 공개 키 (anon key)
+1. [Supabase Dashboard](https://supabase.com/dashboard) 접속
+2. 프로젝트 선택
+3. **Settings** (왼쪽 메뉴) > **API**
+4. **Project URL** 복사
 
-### Google OAuth 설정
+### NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-1. [Google Cloud Console](https://console.cloud.google.com/)에서 새 프로젝트 생성
-2. **APIs & Services > Credentials**에서 OAuth 2.0 Client ID 생성
-3. Authorized redirect URIs에 추가:
-   - `https://your-project-id.supabase.co/auth/v1/callback`
-4. Supabase Dashboard에서 Google Provider 활성화 후 Client ID/Secret 입력
+1. [Supabase Dashboard](https://supabase.com/dashboard) 접속
+2. 프로젝트 선택
+3. **Settings** (왼쪽 메뉴) > **API**
+4. **Project API keys** 섹션에서 `anon` `public` 키 복사
 
 ## 주요 기능
 

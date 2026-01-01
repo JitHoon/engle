@@ -44,9 +44,12 @@ export async function updateSession(request: NextRequest) {
 
   // 보호된 경로 체크 (필요에 따라 수정)
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard');
+
+  // 인증 관련 페이지 (로그인, 회원가입 등)
+  // 비밀번호 재설정 페이지는 제외 (이메일 링크로 접근해야 함)
   const isAuthRoute =
-    request.nextUrl.pathname.startsWith('/login') ||
-    request.nextUrl.pathname.startsWith('/auth');
+    request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/signup';
 
   // 로그인하지 않은 사용자가 보호된 경로에 접근 시 로그인 페이지로 리다이렉트
   if (!user && isProtectedRoute) {
@@ -55,7 +58,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 이미 로그인한 사용자가 로그인 페이지에 접근 시 대시보드로 리다이렉트
+  // 이미 로그인한 사용자가 로그인/회원가입 페이지에 접근 시 대시보드로 리다이렉트
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';

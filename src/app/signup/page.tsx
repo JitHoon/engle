@@ -1,23 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import { Box, Container, Typography, Paper } from '@mui/material';
-import { useRouter } from 'next/navigation';
-import { LoginForm, ForgotPasswordForm } from '@/components';
+import { SignUpForm } from '@/components';
 
 /**
- * 로그인 페이지
+ * 회원가입 페이지
  *
- * 이메일/비밀번호 로그인을 제공합니다.
+ * 이메일/비밀번호 회원가입을 제공합니다.
  */
-export default function LoginPage() {
-  const router = useRouter();
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-
-  const handleLoginSuccess = () => {
-    router.push('/dashboard');
-  };
-
+export default function SignUpPage() {
   return (
     <Container maxWidth="sm">
       <Box
@@ -51,26 +42,17 @@ export default function LoginPage() {
               Engle
             </Typography>
             <Typography color="text.secondary">
-              {showForgotPassword ? '비밀번호 재설정' : '계정에 로그인하세요'}
+              새 계정을 만드세요
             </Typography>
           </Box>
 
-          {showForgotPassword ? (
-            <ForgotPasswordForm
-              onBack={() => setShowForgotPassword(false)}
-            />
-          ) : (
-            <LoginForm
-              onSuccess={handleLoginSuccess}
-              onForgotPassword={() => setShowForgotPassword(true)}
-            />
-          )}
+          <SignUpForm />
         </Paper>
 
         {/* 하단 링크 */}
         <Box sx={{ mt: 3, textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
-            로그인하면{' '}
+            회원가입하면{' '}
             <Typography
               component="a"
               href="/terms"

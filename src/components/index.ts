@@ -2,7 +2,9 @@ export { default as ExampleForm } from './ExampleForm';
 
 // Auth Components
 export {
-  GoogleLoginButton,
+  LoginForm,
+  SignUpForm,
+  ForgotPasswordForm,
   UserProfile,
   AuthStatus,
   ProtectedRoute,

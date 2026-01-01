@@ -10,8 +10,10 @@ import {
   Stack,
   Divider,
   Skeleton,
+  Chip,
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import { useAuth } from '@/contexts';
 import { useRouter } from 'next/navigation';
 
@@ -86,21 +88,28 @@ export default function DashboardPage() {
 
           <Stack direction="row" spacing={3} alignItems="center">
             <Avatar
-              src={user?.photoURL || undefined}
               alt={user?.displayName || 'User'}
-              sx={{ width: 80, height: 80 }}
+              sx={{ width: 80, height: 80, bgcolor: 'primary.main', fontSize: '2rem' }}
             >
               {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
             </Avatar>
 
             <Stack spacing={1}>
-              <Typography variant="h6">
-                {user?.displayName || '이름 없음'}
-              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography variant="h6">
+                  {user?.displayName || '이름 없음'}
+                </Typography>
+                {user?.emailVerified && (
+                  <Chip
+                    icon={<VerifiedIcon />}
+                    label="인증됨"
+                    size="small"
+                    color="success"
+                    variant="outlined"
+                  />
+                )}
+              </Stack>
               <Typography color="text.secondary">{user?.email}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                로그인 방식: {user?.provider || 'Unknown'}
-              </Typography>
             </Stack>
           </Stack>
         </Paper>
@@ -119,7 +128,7 @@ export default function DashboardPage() {
             환영합니다!
           </Typography>
           <Typography color="text.secondary">
-            Supabase와 Google OAuth를 사용한 인증이 성공적으로 구현되었습니다.
+            Supabase 이메일 인증이 성공적으로 구현되었습니다.
             <br />
             이 페이지는 로그인한 사용자만 접근할 수 있는 보호된 페이지입니다.
           </Typography>

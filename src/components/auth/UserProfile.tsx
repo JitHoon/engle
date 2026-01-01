@@ -62,9 +62,8 @@ export default function UserProfile() {
         aria-expanded={open ? 'true' : undefined}
       >
         <Avatar
-          src={user.photoURL || undefined}
           alt={user.displayName || 'User'}
-          sx={{ width: 36, height: 36 }}
+          sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}
         >
           {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
         </Avatar>

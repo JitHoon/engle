@@ -12,6 +12,8 @@ import { createClient } from '@/lib/supabase/client';
 import {
   type AuthContextType,
   type AuthState,
+  type SignInCredentials,
+  type SignUpCredentials,
   mapSupabaseUser,
 } from '@/types/auth';
 
@@ -95,9 +97,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         error: null,
       });
 
-      // 토큰 갱신 시 서버에 알림 (선택사항)
-      if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed');
+      // 이벤트별 처리 (필요시 확장)
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in');
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
       }
     });
 
@@ -107,38 +111,75 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, [supabase.auth]);
 
-  // Google OAuth 로그인
-  const signInWithGoogle = useCallback(async () => {
-    try {
-      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+  // 이메일/비밀번호 로그인
+  const signIn = useCallback(
+    async ({ email, password }: SignInCredentials) => {
+      try {
+        setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (error) {
+        if (error) {
+          throw error;
+        }
+
+        // onAuthStateChange가 상태를 업데이트함
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : '로그인에 실패했습니다.';
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: errorMessage,
+        }));
         throw error;
       }
+    },
+    [supabase.auth]
+  );
 
-      // OAuth는 리다이렉트되므로 여기서 상태 업데이트하지 않음
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : '로그인에 실패했습니다.';
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage,
-      }));
-      throw error;
-    }
-  }, [supabase.auth]);
+  // 회원가입
+  const signUp = useCallback(
+    async ({ email, password, displayName }: SignUpCredentials) => {
+      try {
+        setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name: displayName,
+            },
+          },
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        // 이메일 확인이 필요한 경우 메시지 표시를 위해 상태 업데이트
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: null,
+        }));
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : '회원가입에 실패했습니다.';
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: errorMessage,
+        }));
+        throw error;
+      }
+    },
+    [supabase.auth]
+  );
 
   // 로그아웃
   const signOut = useCallback(async () => {
@@ -164,6 +205,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [supabase.auth]);
 
+  // 비밀번호 재설정 이메일 전송
+  const resetPassword = useCallback(
+    async (email: string) => {
+      try {
+        setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: null,
+        }));
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : '비밀번호 재설정 이메일 전송에 실패했습니다.';
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: errorMessage,
+        }));
+        throw error;
+      }
+    },
+    [supabase.auth]
+  );
+
   // 에러 초기화
   const clearError = useCallback(() => {
     setState((prev) => ({ ...prev, error: null }));
@@ -171,8 +247,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const value: AuthContextType = {
     ...state,
-    signInWithGoogle,
+    signIn,
+    signUp,
     signOut,
+    resetPassword,
     clearError,
   };
 

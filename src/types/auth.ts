@@ -5,9 +5,7 @@ export interface AuthUser {
   id: string;
   email: string | null;
   displayName: string | null;
-  photoURL: string | null;
   emailVerified: boolean;
-  provider: string | null;
 }
 
 // Auth Context 상태 타입
@@ -19,10 +17,25 @@ export interface AuthState {
   error: string | null;
 }
 
+// 로그인 자격 증명
+export interface SignInCredentials {
+  email: string;
+  password: string;
+}
+
+// 회원가입 자격 증명
+export interface SignUpCredentials {
+  email: string;
+  password: string;
+  displayName?: string;
+}
+
 // Auth Context 액션 타입
 export interface AuthContextType extends AuthState {
-  signInWithGoogle: () => Promise<void>;
+  signIn: (credentials: SignInCredentials) => Promise<void>;
+  signUp: (credentials: SignUpCredentials) => Promise<void>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -30,18 +43,13 @@ export interface AuthContextType extends AuthState {
 export function mapSupabaseUser(user: User | null): AuthUser | null {
   if (!user) return null;
 
-  // provider 정보 추출
-  const provider = user.app_metadata?.provider || null;
-
   // 사용자 메타데이터에서 정보 추출
   const metadata = user.user_metadata || {};
 
   return {
     id: user.id,
     email: user.email || null,
-    displayName: metadata.full_name || metadata.name || null,
-    photoURL: metadata.avatar_url || metadata.picture || null,
+    displayName: metadata.display_name || metadata.full_name || metadata.name || null,
     emailVerified: user.email_confirmed_at !== null,
-    provider,
   };
 }
