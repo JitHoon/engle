@@ -23,7 +23,10 @@ interface LoginFormProps {
 /**
  * 이메일/비밀번호 로그인 폼 컴포넌트
  */
-export default function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
+export default function LoginForm({
+  onSuccess,
+  onForgotPassword,
+}: LoginFormProps) {
   const { signIn, error: authError, clearError, isLoading } = useAuth();
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 

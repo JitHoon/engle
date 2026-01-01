@@ -166,7 +166,11 @@ export default function SignUpForm({ onSuccess }: SignUpFormProps) {
         disabled={isLoading}
         sx={{ mt: 3, mb: 2 }}
       >
-        {isLoading ? <CircularProgress size={24} color="inherit" /> : '회원가입'}
+        {isLoading ? (
+          <CircularProgress size={24} color="inherit" />
+        ) : (
+          '회원가입'
+        )}
       </Button>
 
       <Typography variant="body2" textAlign="center" color="text.secondary">

@@ -19,7 +19,7 @@ export const config = {
      * - _next/image (이미지 최적화 파일)
      * - favicon.ico (파비콘)
      * - 이미지 파일들 (.svg, .png, .jpg, .jpeg, .gif, .webp)
-     * 
+     *
      * 필요에 따라 matcher 패턴을 수정하세요.
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
