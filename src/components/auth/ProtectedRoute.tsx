@@ -2,29 +2,25 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { useAuth } from '@/contexts';
 
 interface ProtectedRouteProps {
   children: ReactNode;
   redirectTo?: string;
-  loadingComponent?: ReactNode;
 }
 
 /**
- * 인증이 필요한 페이지를 보호하는 컴포넌트
+ * 보호된 라우트 래퍼 컴포넌트
  *
- * @example
- * ```tsx
- * <ProtectedRoute>
- *   <DashboardPage />
- * </ProtectedRoute>
- * ```
+ * 클라이언트 사이드에서 추가적인 인증 체크를 수행합니다.
+ * 미들웨어와 함께 사용하여 이중 보호를 제공합니다.
+ *
+ * 주의: 미들웨어에서 이미 보호하고 있다면 이 컴포넌트는 선택적입니다.
  */
 export default function ProtectedRoute({
   children,
   redirectTo = '/login',
-  loadingComponent,
 }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
@@ -38,31 +34,23 @@ export default function ProtectedRoute({
   // 로딩 중
   if (isLoading) {
     return (
-      loadingComponent || (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100vh',
-            gap: 2,
-          }}
-        >
-          <CircularProgress />
-          <Typography variant="body2" color="text.secondary">
-            로딩 중...
-          </Typography>
-        </Box>
-      )
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '50vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
-  // 인증되지 않은 경우 (리다이렉트 대기 중)
+  // 인증되지 않은 경우 (리다이렉트 전)
   if (!isAuthenticated) {
     return null;
   }
 
-  // 인증된 경우 자식 컴포넌트 렌더링
   return <>{children}</>;
 }

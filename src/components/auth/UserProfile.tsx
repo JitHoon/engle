@@ -4,28 +4,26 @@ import {
   Box,
   Avatar,
   Typography,
-  Button,
+  Stack,
+  IconButton,
   Menu,
   MenuItem,
   Divider,
-  ListItemIcon,
-  IconButton,
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import { useState } from 'react';
 import { useAuth } from '@/contexts';
+import { useRouter } from 'next/navigation';
 
-interface UserProfileProps {
-  showName?: boolean;
-  avatarSize?: number;
-}
-
-export default function UserProfile({
-  showName = true,
-  avatarSize = 40,
-}: UserProfileProps) {
-  const { user, signOut, isLoading } = useAuth();
+/**
+ * 사용자 프로필 컴포넌트
+ *
+ * 로그인한 사용자의 프로필 정보와 메뉴를 표시합니다.
+ */
+export default function UserProfile() {
+  const { user, signOut } = useAuth();
+  const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -41,55 +39,61 @@ export default function UserProfile({
     handleClose();
     try {
       await signOut();
+      router.push('/');
     } catch (error) {
-      console.error('Sign out failed:', error);
+      console.error('Sign out error:', error);
     }
+  };
+
+  const handleProfile = () => {
+    handleClose();
+    router.push('/dashboard');
   };
 
   if (!user) return null;
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      {showName && (
-        <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
-          {user.displayName || user.email}
-        </Typography>
-      )}
-
+    <Box>
       <IconButton
         onClick={handleClick}
         size="small"
-        aria-controls={open ? 'account-menu' : undefined}
+        aria-controls={open ? 'user-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
       >
         <Avatar
           src={user.photoURL || undefined}
           alt={user.displayName || 'User'}
-          sx={{ width: avatarSize, height: avatarSize }}
+          sx={{ width: 36, height: 36 }}
         >
-          {user.displayName?.[0] || user.email?.[0] || <PersonIcon />}
+          {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
         </Avatar>
       </IconButton>
 
       <Menu
+        id="user-menu"
         anchorEl={anchorEl}
-        id="account-menu"
         open={open}
         onClose={handleClose}
         onClick={handleClose}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            minWidth: 200,
-            mt: 1.5,
+        slotProps={{
+          paper: {
+            elevation: 0,
+            sx: {
+              minWidth: 200,
+              overflow: 'visible',
+              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+              mt: 1,
+              border: '1px solid',
+              borderColor: 'grey.200',
+            },
           },
         }}
       >
         <Box sx={{ px: 2, py: 1.5 }}>
-          <Typography variant="subtitle2" fontWeight={600}>
+          <Typography variant="subtitle2" fontWeight={500}>
             {user.displayName || '사용자'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -99,11 +103,18 @@ export default function UserProfile({
 
         <Divider />
 
-        <MenuItem onClick={handleSignOut} disabled={isLoading}>
-          <ListItemIcon>
+        <MenuItem onClick={handleProfile}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <PersonIcon fontSize="small" />
+            <Typography variant="body2">내 프로필</Typography>
+          </Stack>
+        </MenuItem>
+
+        <MenuItem onClick={handleSignOut}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
             <LogoutIcon fontSize="small" />
-          </ListItemIcon>
-          로그아웃
+            <Typography variant="body2">로그아웃</Typography>
+          </Stack>
         </MenuItem>
       </Menu>
     </Box>

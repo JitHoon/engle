@@ -7,31 +7,32 @@ import { useAuth } from '@/contexts';
 interface GoogleLoginButtonProps {
   fullWidth?: boolean;
   variant?: 'contained' | 'outlined' | 'text';
-  size?: 'small' | 'medium' | 'large';
 }
 
+/**
+ * Google 로그인 버튼 컴포넌트
+ *
+ * Supabase OAuth를 사용하여 Google 로그인을 처리합니다.
+ */
 export default function GoogleLoginButton({
-  fullWidth = false,
+  fullWidth = true,
   variant = 'outlined',
-  size = 'large',
 }: GoogleLoginButtonProps) {
   const { signInWithGoogle, isLoading } = useAuth();
 
-  const handleLogin = async () => {
+  const handleClick = async () => {
     try {
       await signInWithGoogle();
     } catch (error) {
-      // 에러는 AuthContext에서 처리됨
-      console.error('Google login failed:', error);
+      console.error('Google login error:', error);
     }
   };
 
   return (
     <Button
       variant={variant}
-      size={size}
       fullWidth={fullWidth}
-      onClick={handleLogin}
+      onClick={handleClick}
       disabled={isLoading}
       startIcon={
         isLoading ? (
@@ -41,16 +42,13 @@ export default function GoogleLoginButton({
         )
       }
       sx={{
+        py: 1.5,
         borderColor: 'grey.300',
         color: 'text.primary',
-        backgroundColor: variant === 'contained' ? 'white' : 'transparent',
         '&:hover': {
           borderColor: 'grey.400',
-          backgroundColor: variant === 'contained' ? 'grey.50' : 'grey.50',
+          backgroundColor: 'grey.50',
         },
-        textTransform: 'none',
-        fontWeight: 500,
-        py: 1.5,
       }}
     >
       {isLoading ? '로그인 중...' : 'Google로 계속하기'}

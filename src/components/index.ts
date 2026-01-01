@@ -5,6 +5,5 @@ export {
   GoogleLoginButton,
   UserProfile,
   AuthStatus,
-  LoginCard,
   ProtectedRoute,
 } from './auth';
