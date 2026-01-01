@@ -29,3 +29,6 @@ export interface User {
   createdAt: string;
   updatedAt: string;
 }
+
+// Auth 관련 타입
+export * from './auth';
