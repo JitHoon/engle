@@ -65,7 +65,7 @@ npm install
 ```bash
 # Supabase 설정
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-anon-key
 ```
 
 ### 3. Supabase 프로젝트 설정
@@ -73,7 +73,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 1. [Supabase Dashboard](https://supabase.com/dashboard)에서 새 프로젝트 생성
 2. **Settings > API**에서:
    - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
-   - `anon public` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `anon public` key → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
 3. **Authentication > Providers**에서 Email 활성화 (기본 활성화됨)
 4. **Authentication > URL Configuration**에서 Site URL 설정
 
@@ -150,7 +150,7 @@ import { LoginForm, SignUpForm, AuthStatus, UserProfile } from '@/components';
 3. **Settings** (왼쪽 메뉴) > **API**
 4. **Project URL** 복사
 
-### NEXT_PUBLIC_SUPABASE_ANON_KEY
+### NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
 
 1. [Supabase Dashboard](https://supabase.com/dashboard) 접속
 2. 프로젝트 선택
