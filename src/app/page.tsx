@@ -2,23 +2,22 @@
 
 import {
   Box,
-  Container,
-  Typography,
   Button,
   Stack,
   Paper,
   Divider,
+  Container,
+  Typography,
 } from '@mui/material';
+import { colors } from '@/lib/colors';
 import { useAppContext } from '@/contexts';
 import { ExampleForm } from '@/components';
-import { teslaColors } from '@/lib';
 
 export default function Home() {
   const { isSidebarOpen, toggleSidebar } = useAppContext();
 
   return (
     <Box>
-      {/* Hero Section - Tesla Style */}
       <Box
         sx={{
           minHeight: '60vh',
@@ -64,93 +63,89 @@ export default function Home() {
 
       <Divider />
 
-      {/* Color Palette Section */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <Typography variant="h4" gutterBottom textAlign="center" sx={{ mb: 4 }}>
           Tesla 컬러 팔레트
         </Typography>
-
-        {/* Primary Colors */}
+        
         <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
           Primary Colors
         </Typography>
         <Stack direction="row" spacing={2} sx={{ mb: 4 }} flexWrap="wrap" useFlexGap>
           <ColorSwatch
-            color={teslaColors.red.main}
+            color={colors.red.main}
             name="Tesla Red"
             hex="#E31937"
           />
           <ColorSwatch
-            color={teslaColors.red.light}
+            color={colors.red.light}
             name="Red Light"
             hex="#FF4D5E"
           />
           <ColorSwatch
-            color={teslaColors.red.dark}
+            color={colors.red.dark}
             name="Red Dark"
             hex="#B30000"
           />
         </Stack>
-
-        {/* Neutral Colors */}
+        
         <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
           Neutral Colors
         </Typography>
         <Stack direction="row" spacing={2} sx={{ mb: 4 }} flexWrap="wrap" useFlexGap>
           <ColorSwatch
-            color={teslaColors.black.dark}
+            color={colors.black.dark}
             name="Dark"
             hex="#171A20"
           />
           <ColorSwatch
-            color={teslaColors.black.charcoal}
+            color={colors.black.charcoal}
             name="Charcoal"
             hex="#393C41"
           />
           <ColorSwatch
-            color={teslaColors.gray[600]}
+            color={colors.gray[600]}
             name="Gray 600"
             hex="#5C5E62"
           />
           <ColorSwatch
-            color={teslaColors.gray[500]}
+            color={colors.gray[500]}
             name="Gray 500"
             hex="#818181"
           />
           <ColorSwatch
-            color={teslaColors.gray[300]}
+            color={colors.gray[300]}
             name="Gray 300"
             hex="#D0D0D0"
           />
           <ColorSwatch
-            color={teslaColors.gray[100]}
+            color={colors.gray[100]}
             name="Gray 100"
             hex="#F4F4F4"
           />
         </Stack>
-
-        {/* Semantic Colors */}
+        
         <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
           Semantic Colors
         </Typography>
         <Stack direction="row" spacing={2} sx={{ mb: 4 }} flexWrap="wrap" useFlexGap>
           <ColorSwatch
-            color={teslaColors.success.main}
+            color={colors.success.main}
             name="Success"
             hex="#04AA6D"
           />
           <ColorSwatch
-            color={teslaColors.warning.main}
+            color={colors.warning.main}
             name="Warning"
             hex="#F5A623"
           />
           <ColorSwatch
-            color={teslaColors.info.main}
+            color={colors.info.main}
             name="Info"
             hex="#3E6AE1"
           />
           <ColorSwatch
-            color={teslaColors.error.main}
+            color={colors.error.main}
             name="Error"
             hex="#E31937"
           />
@@ -158,7 +153,6 @@ export default function Home() {
 
         <Divider sx={{ my: 4 }} />
 
-        {/* Button Examples */}
         <Typography variant="h4" gutterBottom textAlign="center" sx={{ mb: 4 }}>
           버튼 스타일
         </Typography>
@@ -198,7 +192,6 @@ export default function Home() {
 
         <Divider sx={{ my: 4 }} />
 
-        {/* Form Example */}
         <Typography variant="h4" gutterBottom textAlign="center" sx={{ mb: 4 }}>
           폼 예시
         </Typography>

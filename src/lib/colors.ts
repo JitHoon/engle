@@ -1,14 +1,11 @@
 /**
- * Tesla 브랜드 컬러 팔레트
- *
- * 참고: https://www.tesla.com
- * 출처: Tesla 공식 웹사이트 및 브랜드 가이드라인
+ * 브랜드 컬러 팔레트
  */
 
-export const teslaColors = {
+export const colors = {
   // Primary Brand Color
   red: {
-    main: '#E31937', // Tesla Red (Pantone 186 C)
+    main: '#E31937',
     light: '#FF4D5E',
     dark: '#B30000',
   },
@@ -16,12 +13,12 @@ export const teslaColors = {
   // Neutral Colors
   black: {
     pure: '#000000',
-    dark: '#171A20', // Tesla Dark
-    charcoal: '#393C41', // Tesla Charcoal
+    dark: '#171A20', 
+    charcoal: '#393C41', 
   },
 
   gray: {
-    900: '#171A20', // Darkest
+    900: '#171A20', 
     800: '#212121',
     700: '#393C41',
     600: '#5C5E62',
@@ -59,12 +56,11 @@ export const teslaColors = {
   },
 
   error: {
-    main: '#E31937', // Same as Tesla Red
+    main: '#E31937', 
     light: '#FF4D5E',
     dark: '#B30000',
   },
 } as const;
 
-// 타입 추출
-export type TeslaColors = typeof teslaColors;
-export type TeslaColorKey = keyof TeslaColors;
+export type colors = typeof colors;
+export type ColorKey = keyof colors;
