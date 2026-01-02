@@ -86,30 +86,50 @@ const theme = createTheme({
       'Arial',
       'sans-serif',
     ].join(','),
+    fontSize: 14, // 기본 폰트 크기 작게
     h1: {
+      fontSize: '2rem', // 기본 2.5rem에서 축소
       fontWeight: 500,
       letterSpacing: '-0.01em',
     },
     h2: {
+      fontSize: '1.75rem', // 기본 2rem에서 축소
       fontWeight: 500,
       letterSpacing: '-0.01em',
     },
     h3: {
+      fontSize: '1.5rem', // 기본 1.75rem에서 축소
       fontWeight: 500,
       letterSpacing: '-0.01em',
     },
     h4: {
+      fontSize: '1.25rem', // 기본 1.5rem에서 축소
       fontWeight: 500,
     },
     h5: {
+      fontSize: '1.125rem', // 기본 1.25rem에서 축소
       fontWeight: 500,
     },
     h6: {
+      fontSize: '1rem', // 기본 1.125rem에서 축소
       fontWeight: 500,
+    },
+    body1: {
+      fontSize: '0.875rem', // 기본 1rem에서 축소
+    },
+    body2: {
+      fontSize: '0.8125rem', // 기본 0.875rem에서 축소
     },
     button: {
       textTransform: 'none', // Tesla 스타일 - 대문자 변환 없음
       fontWeight: 500,
+      fontSize: '0.875rem', // 버튼 텍스트 크기 작게
+    },
+    caption: {
+      fontSize: '0.75rem', // 기본 0.75rem 유지
+    },
+    overline: {
+      fontSize: '0.6875rem', // 기본 0.75rem에서 축소
     },
   },
   shape: {
@@ -137,12 +157,28 @@ const theme = createTheme({
       },
     },
     MuiButton: {
+      defaultProps: {
+        size: 'small', // 기본 크기를 small로 설정
+      },
       styleOverrides: {
         root: {
           borderRadius: '4px',
-          padding: '10px 24px',
-          fontSize: '14px',
+          padding: '6px 16px', // small 크기에 맞게 패딩 축소
+          fontSize: '0.875rem',
           fontWeight: 500,
+          minWidth: '64px', // 기본 minWidth 축소
+        },
+        sizeSmall: {
+          padding: '4px 12px',
+          fontSize: '0.8125rem',
+        },
+        sizeMedium: {
+          padding: '6px 16px',
+          fontSize: '0.875rem',
+        },
+        sizeLarge: {
+          padding: '8px 20px',
+          fontSize: '0.9375rem',
         },
         contained: {
           boxShadow: 'none',
@@ -167,18 +203,67 @@ const theme = createTheme({
         outlinedPrimary: {
           borderColor: '#171A20',
           color: '#171A20',
-          borderWidth: '3px',
+          borderWidth: '2px', // 3px에서 2px로 축소
           '&:hover': {
-            borderWidth: '3px',
+            borderWidth: '2px',
             backgroundColor: 'rgba(23, 26, 32, 0.04)',
           },
         },
       },
     },
+    MuiIconButton: {
+      defaultProps: {
+        size: 'small', // 기본 크기를 small로 설정
+      },
+      styleOverrides: {
+        root: {
+          padding: '8px', // 기본 12px에서 축소
+        },
+        sizeSmall: {
+          padding: '4px',
+        },
+        sizeMedium: {
+          padding: '8px',
+        },
+        sizeLarge: {
+          padding: '12px',
+        },
+      },
+    },
+    MuiIcon: {
+      styleOverrides: {
+        root: {
+          fontSize: '1.25rem', // 기본 아이콘 크기 축소
+        },
+      },
+    },
+    MuiSvgIcon: {
+      defaultProps: {
+        fontSize: 'small', // 기본 아이콘 크기를 small로 설정
+      },
+      styleOverrides: {
+        root: {
+          fontSize: '1.25rem', // small: 1.25rem
+        },
+        fontSizeSmall: {
+          fontSize: '1rem',
+        },
+        fontSizeMedium: {
+          fontSize: '1.5rem',
+        },
+        fontSizeLarge: {
+          fontSize: '2rem',
+        },
+      },
+    },
     MuiTextField: {
+      defaultProps: {
+        size: 'small', // 기본 크기를 small로 설정
+      },
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
+            fontSize: '0.875rem', // 입력 텍스트 크기 작게
             '& fieldset': {
               borderColor: '#D0D0D0',
             },
@@ -189,6 +274,46 @@ const theme = createTheme({
               borderColor: '#171A20',
             },
           },
+          '& .MuiInputLabel-root': {
+            fontSize: '0.875rem', // 라벨 크기 작게
+          },
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          fontSize: '0.875rem', // 모든 입력 필드 기본 크기
+        },
+        input: {
+          fontSize: '0.875rem',
+        },
+      },
+    },
+    MuiChip: {
+      defaultProps: {
+        size: 'small', // 기본 크기를 small로 설정
+      },
+      styleOverrides: {
+        root: {
+          fontSize: '0.75rem',
+          height: '24px', // 기본 32px에서 축소
+        },
+        sizeSmall: {
+          height: '20px',
+          fontSize: '0.6875rem',
+        },
+      },
+    },
+    MuiCircularProgress: {
+      defaultProps: {
+        size: 'small', // 기본 크기를 small로 설정
+      },
+    },
+    MuiLinearProgress: {
+      styleOverrides: {
+        root: {
+          height: '4px', // 기본 4px 유지하되 작게
         },
       },
     },
