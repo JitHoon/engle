@@ -1,64 +1,87 @@
 /**
- * 브랜드 컬러 팔레트
+ * Spline-viewer 스타일 브랜드 컬러 팔레트
+ *
+ * 주요 색상:
+ * - Vibrant Blue: 인터랙티브 요소, 버튼
+ * - White: 배경
+ * - Light Gray: 카드 배경 (#F7F7F7)
+ * - Dark Gray: 텍스트
+ * - Pastel Colors: 파스텔 톤 (yellow, pink, blue, purple, teal)
  */
 
 export const colors = {
-  // Primary Brand Color
-  red: {
-    main: '#E31937',
-    light: '#FF4D5E',
-    dark: '#B30000',
+  // Spline-viewer 스타일
+  spline: {
+    blue: {
+      main: '#0066FF', // Vibrant Blue (인터랙티브 요소)
+      light: '#3399FF',
+      dark: '#0052CC',
+    },
+    pastel: {
+      yellow: '#FFE066',
+      pink: '#FFB3D9',
+      blue: '#B3E0FF',
+      purple: '#D9B3FF',
+      teal: '#66E0CC',
+    },
+  },
+
+  // Primary Brand Color (Vibrant Blue)
+  primary: {
+    main: '#0066FF',
+    light: '#3399FF',
+    dark: '#0052CC',
   },
 
   // Neutral Colors
   black: {
     pure: '#000000',
-    dark: '#171A20',
-    charcoal: '#393C41',
+    dark: '#1A1A1A',
+    charcoal: '#333333',
   },
 
   gray: {
-    900: '#171A20',
-    800: '#212121',
-    700: '#393C41',
-    600: '#5C5E62',
-    500: '#818181',
-    400: '#A0A0A0',
-    300: '#D0D0D0',
-    200: '#E8E8E8',
-    100: '#F4F4F4',
-    50: '#FAFAFA',
+    900: '#1A1A1A',
+    800: '#2E2E2E',
+    700: '#4A4A4A',
+    600: '#666666',
+    500: '#888888',
+    400: '#AAAAAA',
+    300: '#CCCCCC',
+    200: '#E0E0E0',
+    100: '#F0F0F0',
+    50: '#F7F7F7', // 카드 배경
   },
 
   white: {
     pure: '#FFFFFF',
     off: '#FAFAFA',
-    soft: '#F4F4F4',
+    soft: '#F7F7F7', // 카드 배경
   },
 
   // Semantic Colors
   success: {
-    main: '#04AA6D',
-    light: '#06D685',
-    dark: '#038052',
+    main: '#66E0CC', // Teal
+    light: '#99F0E0',
+    dark: '#33CCAA',
   },
 
   warning: {
-    main: '#F5A623',
-    light: '#F7B955',
-    dark: '#C9870F',
+    main: '#FFE066', // Pastel Yellow
+    light: '#FFF099',
+    dark: '#FFCC33',
   },
 
   info: {
-    main: '#3E6AE1',
-    light: '#6B8FEF',
-    dark: '#2E4FA8',
+    main: '#0066FF', // Vibrant Blue
+    light: '#3399FF',
+    dark: '#0052CC',
   },
 
   error: {
-    main: '#E31937',
-    light: '#FF4D5E',
-    dark: '#B30000',
+    main: '#FF6B6B',
+    light: '#FF9999',
+    dark: '#CC3333',
   },
 } as const;
 
