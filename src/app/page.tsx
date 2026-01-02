@@ -1,8 +1,21 @@
 'use client';
 
 import { Box, Button, Stack, Paper, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts';
 
 export default function Home() {
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      router.push('/apps');
+    } else {
+      router.push('/login');
+    }
+  };
+
   return (
     <Box>
       <Box
@@ -37,10 +50,15 @@ export default function Home() {
         </Typography>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <Button variant="contained" color="primary" size="large">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleGetStarted}
+            disabled={isLoading}
+          >
             시작하기
           </Button>
-          <Button variant="outlined" color="primary" size="large">
+          <Button variant="outlined" color="primary">
             더 알아보기
           </Button>
         </Stack>

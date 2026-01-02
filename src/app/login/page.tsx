@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleLoginSuccess = () => {
-    router.push('/dashboard');
+    router.push('/apps');
   };
 
   return (
