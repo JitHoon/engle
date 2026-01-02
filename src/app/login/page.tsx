@@ -70,8 +70,7 @@ export default function LoginPage() {
           <Typography variant="body2" color="text.secondary">
             로그인하면{' '}
             <Typography
-              component="a"
-              href="/terms"
+              component="span"
               variant="body2"
               sx={{ color: 'primary.main', textDecoration: 'underline' }}
             >
@@ -79,8 +78,7 @@ export default function LoginPage() {
             </Typography>
             {' 및 '}
             <Typography
-              component="a"
-              href="/privacy"
+              component="span"
               variant="body2"
               sx={{ color: 'primary.main', textDecoration: 'underline' }}
             >

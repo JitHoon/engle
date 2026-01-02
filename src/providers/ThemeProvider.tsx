@@ -12,118 +12,127 @@ interface ThemeProviderProps {
 }
 
 /**
- * Tesla 브랜드 컬러 기반 MUI 테마
+ * Spline-viewer 스타일 MUI 테마
  *
- * Tesla 주요 색상:
- * - Tesla Red: #E31937 (Primary)
- * - Dark Black: #171A20 (배경/텍스트)
- * - Charcoal: #393C41 (Secondary)
- * - Medium Gray: #5C5E62 (보조)
- * - Light Gray: #F4F4F4 (배경)
+ * 주요 색상:
+ * - Vibrant Blue: #0066FF (Primary, 인터랙티브 요소)
  * - White: #FFFFFF (배경)
+ * - Light Gray: #F7F7F7 (카드 배경)
+ * - Dark Gray: #1A1A1A (텍스트)
+ * - Pastel Colors: 파스텔 톤 (yellow, pink, blue, purple, teal)
  */
 const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#E31937', // Tesla Red
-      light: '#FF4D5E',
-      dark: '#B30000',
+      main: '#0066FF', // Vibrant Blue
+      light: '#3399FF',
+      dark: '#0052CC',
       contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#393C41', // Tesla Charcoal
-      light: '#5C5E62',
-      dark: '#171A20',
+      main: '#666666', // Medium Gray
+      light: '#888888',
+      dark: '#4A4A4A',
       contrastText: '#FFFFFF',
     },
     background: {
-      default: '#FFFFFF',
-      paper: '#F4F4F4',
+      default: '#000000', // 모든 페이지 기본 배경 블랙
+      paper: '#F7F7F7', // 카드 배경
     },
     text: {
-      primary: '#171A20', // Tesla Dark
-      secondary: '#5C5E62', // Tesla Medium Gray
+      primary: '#1A1A1A', // Dark Gray
+      secondary: '#666666', // Medium Gray
     },
     grey: {
-      50: '#FAFAFA',
-      100: '#F4F4F4',
-      200: '#E8E8E8',
-      300: '#D0D0D0',
-      400: '#A0A0A0',
-      500: '#818181',
-      600: '#5C5E62',
-      700: '#393C41',
-      800: '#212121',
-      900: '#171A20',
+      50: '#F7F7F7', // 카드 배경
+      100: '#F0F0F0',
+      200: '#E0E0E0',
+      300: '#CCCCCC',
+      400: '#AAAAAA',
+      500: '#888888',
+      600: '#666666',
+      700: '#4A4A4A',
+      800: '#2E2E2E',
+      900: '#1A1A1A',
     },
     error: {
-      main: '#E31937', // Tesla Red (에러에도 동일 사용)
-      light: '#FF4D5E',
-      dark: '#B30000',
+      main: '#FF6B6B',
+      light: '#FF9999',
+      dark: '#CC3333',
     },
     success: {
-      main: '#04AA6D',
-      light: '#06D685',
-      dark: '#038052',
+      main: '#66E0CC', // Teal
+      light: '#99F0E0',
+      dark: '#33CCAA',
     },
     warning: {
-      main: '#F5A623',
-      light: '#F7B955',
-      dark: '#C9870F',
+      main: '#FFE066', // Pastel Yellow
+      light: '#FFF099',
+      dark: '#FFCC33',
     },
     info: {
-      main: '#3E6AE1',
-      light: '#6B8FEF',
-      dark: '#2E4FA8',
+      main: '#0066FF', // Vibrant Blue
+      light: '#3399FF',
+      dark: '#0052CC',
     },
   },
   typography: {
     fontFamily: [
-      'Gotham',
+      '-apple-system',
+      'BlinkMacSystemFont',
+      '"Segoe UI"',
+      'Roboto',
       '"Helvetica Neue"',
-      'Helvetica',
       'Arial',
       'sans-serif',
     ].join(','),
-    fontSize: 14, // 기본 폰트 크기 작게
+    fontSize: 16,
     h1: {
-      fontSize: '2rem', // 기본 2.5rem에서 축소
-      fontWeight: 500,
-      letterSpacing: '-0.01em',
+      fontSize: '2.5rem',
+      fontWeight: 600,
+      letterSpacing: '-0.02em',
+      lineHeight: 1.2,
     },
     h2: {
-      fontSize: '1.75rem', // 기본 2rem에서 축소
-      fontWeight: 500,
+      fontSize: '2rem',
+      fontWeight: 600,
       letterSpacing: '-0.01em',
+      lineHeight: 1.3,
     },
     h3: {
-      fontSize: '1.5rem', // 기본 1.75rem에서 축소
-      fontWeight: 500,
+      fontSize: '1.75rem',
+      fontWeight: 600,
       letterSpacing: '-0.01em',
+      lineHeight: 1.3,
     },
     h4: {
-      fontSize: '1.25rem', // 기본 1.5rem에서 축소
-      fontWeight: 500,
+      fontSize: '1.5rem',
+      fontWeight: 600,
+      lineHeight: 1.4,
     },
     h5: {
-      fontSize: '1.125rem', // 기본 1.25rem에서 축소
-      fontWeight: 500,
+      fontSize: '1.25rem',
+      fontWeight: 600,
+      lineHeight: 1.4,
     },
     h6: {
-      fontSize: '1rem', // 기본 1.125rem에서 축소
-      fontWeight: 500,
+      fontSize: '1.125rem',
+      fontWeight: 600,
+      lineHeight: 1.4,
     },
     body1: {
-      fontSize: '0.875rem', // 기본 1rem에서 축소
+      fontSize: '1rem',
+      lineHeight: 1.6,
     },
     body2: {
-      fontSize: '0.8125rem', // 기본 0.875rem에서 축소
+      fontSize: '0.875rem',
+      lineHeight: 1.5,
     },
     button: {
-      textTransform: 'none', // Tesla 스타일 - 대문자 변환 없음
+      textTransform: 'none',
       fontWeight: 500,
-      fontSize: '0.875rem', // 버튼 텍스트 크기 작게
+      fontSize: '1rem',
     },
     caption: {
       fontSize: '0.75rem', // 기본 0.75rem 유지
@@ -133,7 +142,7 @@ const theme = createTheme({
     },
   },
   shape: {
-    borderRadius: 4, // Tesla 미니멀 스타일 - 약간의 라운드
+    borderRadius: 12, // Spline-viewer 스타일 - 둥근 모서리
   },
   components: {
     MuiCssBaseline: {
@@ -144,14 +153,14 @@ const theme = createTheme({
             width: '8px',
           },
           '&::-webkit-scrollbar-track': {
-            background: '#F4F4F4',
+            background: '#F7F7F7',
           },
           '&::-webkit-scrollbar-thumb': {
-            background: '#5C5E62',
-            borderRadius: '4px',
+            background: '#CCCCCC',
+            borderRadius: '6px',
           },
           '&::-webkit-scrollbar-thumb:hover': {
-            background: '#393C41',
+            background: '#AAAAAA',
           },
         },
       },
@@ -187,26 +196,26 @@ const theme = createTheme({
           },
         },
         containedPrimary: {
-          backgroundColor: '#171A20',
+          backgroundColor: '#0066FF', // Vibrant Blue
           color: '#FFFFFF',
           '&:hover': {
-            backgroundColor: '#000000',
+            backgroundColor: '#0052CC',
           },
         },
         containedSecondary: {
-          backgroundColor: '#F4F4F4',
-          color: '#171A20',
+          backgroundColor: '#F7F7F7',
+          color: '#1A1A1A',
           '&:hover': {
-            backgroundColor: '#E8E8E8',
+            backgroundColor: '#E0E0E0',
           },
         },
         outlinedPrimary: {
-          borderColor: '#171A20',
-          color: '#171A20',
-          borderWidth: '2px', // 3px에서 2px로 축소
+          borderColor: '#0066FF',
+          color: '#0066FF',
+          borderWidth: '1px',
           '&:hover': {
-            borderWidth: '2px',
-            backgroundColor: 'rgba(23, 26, 32, 0.04)',
+            borderWidth: '1px',
+            backgroundColor: 'rgba(0, 102, 255, 0.08)',
           },
         },
       },
@@ -320,7 +329,9 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.08)',
+          backgroundColor: '#F7F7F7', // 카드 배경
+          boxShadow: '0px 2px 12px rgba(0, 0, 0, 0.06)',
+          borderRadius: '12px',
         },
       },
     },
@@ -347,30 +358,30 @@ const theme = createTheme({
   },
 });
 
-// 다크 모드 테마 (Tesla 웹사이트의 다크 섹션 기반)
+// 다크 모드 테마 (Spline-viewer 스타일)
 export const darkTheme = createTheme({
   ...theme,
   palette: {
     mode: 'dark',
     primary: {
-      main: '#E31937',
-      light: '#FF4D5E',
-      dark: '#B30000',
+      main: '#3399FF', // 밝은 Blue
+      light: '#66B3FF',
+      dark: '#0066FF',
       contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#F4F4F4',
-      light: '#FFFFFF',
-      dark: '#D0D0D0',
-      contrastText: '#171A20',
+      main: '#888888',
+      light: '#AAAAAA',
+      dark: '#666666',
+      contrastText: '#FFFFFF',
     },
     background: {
-      default: '#171A20',
-      paper: '#212121',
+      default: '#1A1A1A',
+      paper: '#2E2E2E',
     },
     text: {
       primary: '#FFFFFF',
-      secondary: '#A0A0A0',
+      secondary: '#CCCCCC',
     },
   },
   components: {
@@ -378,27 +389,35 @@ export const darkTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         containedPrimary: {
-          backgroundColor: '#FFFFFF',
-          color: '#171A20',
+          backgroundColor: '#3399FF',
+          color: '#FFFFFF',
           '&:hover': {
-            backgroundColor: '#F4F4F4',
+            backgroundColor: '#0066FF',
           },
         },
         containedSecondary: {
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          backgroundColor: '#2E2E2E',
           color: '#FFFFFF',
           '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            backgroundColor: '#4A4A4A',
           },
         },
         outlinedPrimary: {
-          borderColor: '#FFFFFF',
-          color: '#FFFFFF',
-          borderWidth: '3px',
+          borderColor: '#3399FF',
+          color: '#3399FF',
+          borderWidth: '1px',
           '&:hover': {
-            borderWidth: '3px',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: '1px',
+            backgroundColor: 'rgba(51, 153, 255, 0.1)',
           },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#2E2E2E',
+          boxShadow: '0px 2px 12px rgba(0, 0, 0, 0.3)',
         },
       },
     },

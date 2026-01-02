@@ -12,6 +12,7 @@ import {
   Link as MuiLink,
 } from '@mui/material';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts';
 import type { SignInCredentials } from '@/types/auth';
 
@@ -27,6 +28,7 @@ export default function LoginForm({
   onSuccess,
   onForgotPassword,
 }: LoginFormProps) {
+  const router = useRouter();
   const { signIn, error: authError, clearError, isLoading } = useAuth();
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
@@ -125,7 +127,7 @@ export default function LoginForm({
 
       <Typography variant="body2" textAlign="center" color="text.secondary">
         계정이 없으신가요?{' '}
-        <MuiLink component={Link} href="/signup" underline="hover">
+        <MuiLink component={Link} href="/signup" underline="hover" sx={{ m: 0, p: 0, ml: 1 }}>
           회원가입
         </MuiLink>
       </Typography>
