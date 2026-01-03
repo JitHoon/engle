@@ -450,30 +450,17 @@ export default function PatternsPage() {
     }
   };
 
-  const handlePlayEnglishSpeech = (text: string) => {
-    if (!('speechSynthesis' in window)) {
-      showSnackbar('이 브라우저는 음성 재생을 지원하지 않습니다.', 'warning');
-      return;
+  const handlePlayEnglishSpeech = async (text: string) => {
+    try {
+      const { speakText } = await import('@/lib/tts');
+      await speakText(text, 'en-US', true);
+    } catch (error) {
+      console.error('음성 재생 오류:', error);
+      showSnackbar(
+        error instanceof Error ? error.message : '음성 재생에 실패했습니다.',
+        'error'
+      );
     }
-
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
-
-    const voices = window.speechSynthesis.getVoices();
-    const usVoice = voices.find(
-      (voice) => voice.lang.startsWith('en-US') && voice.name.includes('US')
-    ) || voices.find((voice) => voice.lang.startsWith('en-US'));
-
-    if (usVoice) {
-      utterance.voice = usVoice;
-    }
-
-    window.speechSynthesis.speak(utterance);
   };
 
   const handleDeleteTag = async (patternId: string, tagToDelete: string) => {
