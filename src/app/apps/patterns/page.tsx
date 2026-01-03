@@ -40,14 +40,14 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts';
 import {
-  getCards,
-  getCardsPaginated,
-  getCardStats,
-  createCard,
-  deleteCard,
-  updateCard,
-} from '@/lib/supabase/cards';
-import type { Card, CreateCardData } from '@/types/card';
+  getPatterns,
+  getPatternsPaginated,
+  getPatternStats,
+  createPattern,
+  deletePattern,
+  updatePattern,
+} from '@/lib/supabase/patterns';
+import type { Pattern, CreatePatternData } from '@/types/pattern';
 
 /**
  * 태그 툴팁 컴포넌트
@@ -138,11 +138,11 @@ function TagTooltip({ tags }: { tags: string[] }) {
 }
 
 /**
- * Collections & Upgrade 페이지
+ * Patterns 페이지
  *
- * 카드 목록 확인, 카드 추가, 카드 복습 기능 제공
+ * 패턴 목록 확인, 패턴 추가, 패턴 복습 기능 제공
  */
-export default function CollectionsUpgradePage() {
+export default function PatternsPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -159,7 +159,7 @@ export default function CollectionsUpgradePage() {
     }
     return [];
   };
-  const [cards, setCards] = useState<Card[]>([]);
+  const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -180,32 +180,36 @@ export default function CollectionsUpgradePage() {
   const PAGE_SIZE = 3;
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
-  const [currentReviewCard, setCurrentReviewCard] = useState<Card | null>(null);
-  const [reviewCards, setReviewCards] = useState<Card[]>([]);
+  const [currentReviewPattern, setCurrentReviewPattern] = useState<Pattern | null>(null);
+  const [reviewPatterns, setReviewPatterns] = useState<Pattern[]>([]);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState<'all' | 'incomplete' | 'completed'>('all');
   const [showAnswer, setShowAnswer] = useState(false);
 
-  // 카드 편집 상태
-  const [editingCardId, setEditingCardId] = useState<string | null>(null);
-  const [editCardData, setEditCardData] = useState<{ ko: string; en: string }>({
-    ko: '',
-    en: '',
+  // 패턴 편집 상태
+  const [editingPatternId, setEditingPatternId] = useState<string | null>(null);
+  const [editPatternData, setEditPatternData] = useState<{ pattern_ko: string; pattern_en: string; examples: string[] }>({
+    pattern_ko: '',
+    pattern_en: '',
+    examples: [],
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // 카드 추가 폼 상태
-  const [newCard, setNewCard] = useState<CreateCardData>({
-    ko: '',
-    en: '',
+  // 패턴 추가 폼 상태
+  const [newPattern, setNewPattern] = useState<CreatePatternData>({
+    pattern_ko: '',
+    pattern_en: '',
+    examples: [],
     tags: [],
   });
-  const [newCardTags, setNewCardTags] = useState<string[]>([]);
+  const [newPatternTags, setNewPatternTags] = useState<string[]>([]);
+  const [newPatternExamples, setNewPatternExamples] = useState<string[]>([]);
+  const [newExampleValue, setNewExampleValue] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [availableTags, setAvailableTags] = useState<string[]>([]);
 
-  const [addingTagCardId, setAddingTagCardId] = useState<string | null>(null);
+  const [addingTagPatternId, setAddingTagPatternId] = useState<string | null>(null);
   const [newTagValue, setNewTagValue] = useState<string>('');
 
   const [openTagReviewDialog, setOpenTagReviewDialog] = useState(false);
@@ -213,10 +217,10 @@ export default function CollectionsUpgradePage() {
 
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{
     open: boolean;
-    cardId: string | null;
+    patternId: string | null;
   }>({
     open: false,
-    cardId: null,
+    patternId: null,
   });
 
   const [snackbar, setSnackbar] = useState<{
@@ -239,36 +243,36 @@ export default function CollectionsUpgradePage() {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && user?.id) {
-      loadCards(true);
+      loadPatterns(true);
       loadStats();
     }
   }, [authLoading, isAuthenticated, user?.id]);
 
   useEffect(() => {
-    if (cards.length > 0) {
+    if (patterns.length > 0) {
       const tags = new Set<string>();
-      cards.forEach((card) => {
-        const cardTags = ensureTagsArray(card.tags);
-        if (cardTags.length > 0) {
-          cardTags.forEach((tag) => tags.add(tag));
+      patterns.forEach((pattern) => {
+        const patternTags = ensureTagsArray(pattern.tags);
+        if (patternTags.length > 0) {
+          patternTags.forEach((tag) => tags.add(tag));
         }
       });
       setAvailableTags(Array.from(tags).sort());
     }
-  }, [cards]);
+  }, [patterns]);
 
   const loadStats = async () => {
     if (!user?.id) return;
 
     try {
-      const cardStats = await getCardStats(user.id);
-      setStats(cardStats);
+      const patternStats = await getPatternStats(user.id);
+      setStats(patternStats);
     } catch (err) {
       console.error('Error loading stats:', err);
     }
   };
 
-  const loadCards = useCallback(
+  const loadPatterns = useCallback(
     async (reset: boolean = false) => {
       if (!user?.id) return;
 
@@ -277,7 +281,7 @@ export default function CollectionsUpgradePage() {
           setIsLoading(true);
           setCurrentPage(0);
           currentPageRef.current = 0;
-          setCards([]);
+          setPatterns([]);
         } else {
           setIsLoadingMore(true);
         }
@@ -295,31 +299,31 @@ export default function CollectionsUpgradePage() {
           pageSize = PAGE_SIZE;
         }
 
-        const { cards: newCards, hasMore: more } = await getCardsPaginated(
+        const { patterns: newPatterns, hasMore: more } = await getPatternsPaginated(
           user.id,
           page,
           pageSize
         );
 
         if (reset) {
-          setCards(newCards);
+          setPatterns(newPatterns);
           setCurrentPage(INITIAL_PAGE_SIZE / PAGE_SIZE);
           currentPageRef.current = INITIAL_PAGE_SIZE / PAGE_SIZE;
           loadedOffsetRef.current = INITIAL_PAGE_SIZE;
         } else {
-          setCards((prev) => {
-            const existingIds = new Set(prev.map((card) => card.id));
-            const uniqueNewCards = newCards.filter((card) => !existingIds.has(card.id));
-            return [...prev, ...uniqueNewCards];
+          setPatterns((prev) => {
+            const existingIds = new Set(prev.map((pattern) => pattern.id));
+            const uniqueNewPatterns = newPatterns.filter((pattern) => !existingIds.has(pattern.id));
+            return [...prev, ...uniqueNewPatterns];
           });
           const nextPage = currentPageRef.current + 1;
           setCurrentPage(nextPage);
           currentPageRef.current = nextPage;
-          loadedOffsetRef.current += newCards.length;
+          loadedOffsetRef.current += newPatterns.length;
         }
         setHasMore(more);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '카드를 불러오는데 실패했습니다.');
+        setError(err instanceof Error ? err.message : '패턴을 불러오는데 실패했습니다.');
       } finally {
         setIsLoading(false);
         setIsLoadingMore(false);
@@ -339,7 +343,7 @@ export default function CollectionsUpgradePage() {
         const target = entries[0];
         if (target.isIntersecting && !isFetchingRef.current && hasMore) {
           isFetchingRef.current = true;
-          loadCards(false).finally(() => {
+          loadPatterns(false).finally(() => {
             isFetchingRef.current = false;
           });
         }
@@ -361,79 +365,82 @@ export default function CollectionsUpgradePage() {
         observer.unobserve(target);
       }
     };
-  }, [hasMore, isLoading, isLoadingMore, loadCards, user?.id]);
+  }, [hasMore, isLoading, isLoadingMore, loadPatterns, user?.id]);
 
-  const handleAddCard = async () => {
+  const handleAddPattern = async () => {
     if (!user?.id) return;
 
-    if (!newCard.ko.trim() || !newCard.en.trim()) {
-      setError('한국어와 영어를 모두 입력해주세요.');
+    if (!newPattern.pattern_ko.trim() || !newPattern.pattern_en.trim()) {
+      setError('한국어와 영어 패턴을 모두 입력해주세요.');
       return;
     }
 
     try {
       setIsSubmitting(true);
       setError(null);
-      const createdCard = await createCard(user.id, {
-        ko: newCard.ko.trim(),
-        en: newCard.en.trim(),
-        tags: newCardTags.filter((tag) => tag.trim() !== ''),
+      const createdPattern = await createPattern(user.id, {
+        pattern_ko: newPattern.pattern_ko.trim(),
+        pattern_en: newPattern.pattern_en.trim(),
+        examples: newPatternExamples.filter((ex) => ex.trim() !== ''),
+        tags: newPatternTags.filter((tag) => tag.trim() !== ''),
       });
-      setCards((prev) => [createdCard, ...prev]);
-      setNewCard({ ko: '', en: '', tags: [] });
-      setNewCardTags([]);
+      setPatterns((prev) => [createdPattern, ...prev]);
+      setNewPattern({ pattern_ko: '', pattern_en: '', examples: [], tags: [] });
+      setNewPatternTags([]);
+      setNewPatternExamples([]);
+      setNewExampleValue('');
       setOpenAddDialog(false);
       loadStats();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '카드를 추가하는데 실패했습니다.');
+      setError(err instanceof Error ? err.message : '패턴을 추가하는데 실패했습니다.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteCardClick = (cardId: string) => {
-    setDeleteConfirmDialog({ open: true, cardId });
+  const handleDeletePatternClick = (patternId: string) => {
+    setDeleteConfirmDialog({ open: true, patternId });
   };
 
   const handleDeleteConfirmClose = () => {
-    setDeleteConfirmDialog({ open: false, cardId: null });
+    setDeleteConfirmDialog({ open: false, patternId: null });
   };
 
-  const handleDeleteCard = async () => {
-    const cardId = deleteConfirmDialog.cardId;
-    if (!cardId) return;
+  const handleDeletePattern = async () => {
+    const patternId = deleteConfirmDialog.patternId;
+    if (!patternId) return;
 
     try {
-      await deleteCard(cardId);
-      setCards((prev) => prev.filter((card) => card.id !== cardId));
+      await deletePattern(patternId);
+      setPatterns((prev) => prev.filter((pattern) => pattern.id !== patternId));
       loadStats();
       handleDeleteConfirmClose();
-      showSnackbar('카드가 삭제되었습니다.', 'success');
+      showSnackbar('패턴이 삭제되었습니다.', 'success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : '카드를 삭제하는데 실패했습니다.');
+      setError(err instanceof Error ? err.message : '패턴을 삭제하는데 실패했습니다.');
       handleDeleteConfirmClose();
     }
   };
 
-  const handleAddTag = async (cardId: string, newTags: string[]) => {
+  const handleAddTag = async (patternId: string, newTags: string[]) => {
     if (!user?.id || newTags.length === 0) return;
 
     try {
-      const card = cards.find((c) => c.id === cardId);
-      if (!card) return;
+      const pattern = patterns.find((p) => p.id === patternId);
+      if (!pattern) return;
 
-      const currentTags = ensureTagsArray(card.tags);
+      const currentTags = ensureTagsArray(pattern.tags);
       const updatedTags = Array.from(new Set([...currentTags, ...newTags.filter((tag) => tag.trim() !== '')]));
 
-      const updatedCard = await updateCard(cardId, { tags: updatedTags });
-      setCards((prev) => prev.map((c) => (c.id === updatedCard.id ? updatedCard : c)));
-      setAddingTagCardId(null);
+      const updatedPattern = await updatePattern(patternId, { tags: updatedTags });
+      setPatterns((prev) => prev.map((p) => (p.id === updatedPattern.id ? updatedPattern : p)));
+      setAddingTagPatternId(null);
       setNewTagValue('');
       const tags = new Set<string>();
-      cards.forEach((c) => {
-        const cTags = ensureTagsArray(c.tags);
-        if (cTags.length > 0) {
-          cTags.forEach((tag) => tags.add(tag));
+      patterns.forEach((p) => {
+        const pTags = ensureTagsArray(p.tags);
+        if (pTags.length > 0) {
+          pTags.forEach((tag) => tags.add(tag));
         }
       });
       updatedTags.forEach((tag) => tags.add(tag));
@@ -469,23 +476,23 @@ export default function CollectionsUpgradePage() {
     window.speechSynthesis.speak(utterance);
   };
 
-  const handleDeleteTag = async (cardId: string, tagToDelete: string) => {
+  const handleDeleteTag = async (patternId: string, tagToDelete: string) => {
     if (!user?.id) return;
 
     try {
-      const card = cards.find((c) => c.id === cardId);
-      if (!card) return;
+      const pattern = patterns.find((p) => p.id === patternId);
+      if (!pattern) return;
 
-      const currentTags = ensureTagsArray(card.tags);
+      const currentTags = ensureTagsArray(pattern.tags);
       const updatedTags = currentTags.filter((tag) => tag !== tagToDelete);
 
-      const updatedCard = await updateCard(cardId, { tags: updatedTags });
-      setCards((prev) => prev.map((c) => (c.id === updatedCard.id ? updatedCard : c)));
+      const updatedPattern = await updatePattern(patternId, { tags: updatedTags });
+      setPatterns((prev) => prev.map((p) => (p.id === updatedPattern.id ? updatedPattern : p)));
       const tags = new Set<string>();
-      cards.forEach((c) => {
-        const cTags = ensureTagsArray(c.tags);
-        if (cTags.length > 0) {
-          cTags.forEach((tag) => tags.add(tag));
+      patterns.forEach((p) => {
+        const pTags = ensureTagsArray(p.tags);
+        if (pTags.length > 0) {
+          pTags.forEach((tag) => tags.add(tag));
         }
       });
       updatedTags.forEach((tag) => tags.add(tag));
@@ -495,37 +502,42 @@ export default function CollectionsUpgradePage() {
     }
   };
 
-  const handleStartEdit = (card: Card) => {
-    setEditingCardId(card.id);
-    setEditCardData({ ko: card.ko, en: card.en });
+  const handleStartEdit = (pattern: Pattern) => {
+    setEditingPatternId(pattern.id);
+    setEditPatternData({
+      pattern_ko: pattern.pattern_ko,
+      pattern_en: pattern.pattern_en,
+      examples: pattern.examples || [],
+    });
   };
 
   const handleCancelEdit = () => {
-    setEditingCardId(null);
-    setEditCardData({ ko: '', en: '' });
+    setEditingPatternId(null);
+    setEditPatternData({ pattern_ko: '', pattern_en: '', examples: [] });
   };
 
-  const handleSaveEdit = async (cardId: string) => {
-    if (!editCardData.ko.trim() || !editCardData.en.trim()) {
-      setError('한국어와 영어를 모두 입력해주세요.');
+  const handleSaveEdit = async (patternId: string) => {
+    if (!editPatternData.pattern_ko.trim() || !editPatternData.pattern_en.trim()) {
+      setError('한국어와 영어 패턴을 모두 입력해주세요.');
       return;
     }
 
     try {
       setIsSaving(true);
       setError(null);
-      const updatedCard = await updateCard(cardId, {
-        ko: editCardData.ko.trim(),
-        en: editCardData.en.trim(),
+      const updatedPattern = await updatePattern(patternId, {
+        pattern_ko: editPatternData.pattern_ko.trim(),
+        pattern_en: editPatternData.pattern_en.trim(),
+        examples: editPatternData.examples.filter((ex) => ex.trim() !== ''),
       });
-      setCards((prev) =>
-        prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
+      setPatterns((prev) =>
+        prev.map((pattern) => (pattern.id === updatedPattern.id ? updatedPattern : pattern))
       );
-      setEditingCardId(null);
-      setEditCardData({ ko: '', en: '' });
+      setEditingPatternId(null);
+      setEditPatternData({ pattern_ko: '', pattern_en: '', examples: [] });
       loadStats();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '카드를 수정하는데 실패했습니다.');
+      setError(err instanceof Error ? err.message : '패턴을 수정하는데 실패했습니다.');
     } finally {
       setIsSaving(false);
     }
@@ -535,19 +547,19 @@ export default function CollectionsUpgradePage() {
     if (!user?.id) return;
 
     try {
-      const allCards = await getCards(user.id);
-      if (allCards.length === 0) {
-        showSnackbar('복습할 카드가 없습니다.', 'info');
+      const allPatterns = await getPatterns(user.id);
+      if (allPatterns.length === 0) {
+        showSnackbar('복습할 패턴이 없습니다.', 'info');
         return;
       }
       setReviewMode('all');
-      setReviewCards(allCards);
+      setReviewPatterns(allPatterns);
       setCurrentReviewIndex(0);
-      setCurrentReviewCard(allCards[0]);
+      setCurrentReviewPattern(allPatterns[0]);
       setShowAnswer(false);
       setOpenReviewDialog(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '카드를 불러오는데 실패했습니다.');
+      setError(err instanceof Error ? err.message : '패턴을 불러오는데 실패했습니다.');
     }
   };
 
@@ -555,20 +567,20 @@ export default function CollectionsUpgradePage() {
     if (!user?.id) return;
 
     try {
-      const allCards = await getCards(user.id);
-      const incompleteCards = allCards.filter((card) => !card.done);
-      if (incompleteCards.length === 0) {
-        showSnackbar('복습할 카드가 없습니다.', 'info');
+      const allPatterns = await getPatterns(user.id);
+      const incompletePatterns = allPatterns.filter((pattern) => !pattern.done);
+      if (incompletePatterns.length === 0) {
+        showSnackbar('복습할 패턴이 없습니다.', 'info');
         return;
       }
       setReviewMode('incomplete');
-      setReviewCards(incompleteCards);
+      setReviewPatterns(incompletePatterns);
       setCurrentReviewIndex(0);
-      setCurrentReviewCard(incompleteCards[0]);
+      setCurrentReviewPattern(incompletePatterns[0]);
       setShowAnswer(false);
       setOpenReviewDialog(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '카드를 불러오는데 실패했습니다.');
+      setError(err instanceof Error ? err.message : '패턴을 불러오는데 실패했습니다.');
     }
   };
 
@@ -576,20 +588,20 @@ export default function CollectionsUpgradePage() {
     if (!user?.id) return;
 
     try {
-      const allCards = await getCards(user.id);
-      const completedCards = allCards.filter((card) => card.done);
-      if (completedCards.length === 0) {
-        showSnackbar('완료된 카드가 없습니다.', 'info');
+      const allPatterns = await getPatterns(user.id);
+      const completedPatterns = allPatterns.filter((pattern) => pattern.done);
+      if (completedPatterns.length === 0) {
+        showSnackbar('완료된 패턴이 없습니다.', 'info');
         return;
       }
       setReviewMode('completed');
-      setReviewCards(completedCards);
+      setReviewPatterns(completedPatterns);
       setCurrentReviewIndex(0);
-      setCurrentReviewCard(completedCards[0]);
+      setCurrentReviewPattern(completedPatterns[0]);
       setShowAnswer(false);
       setOpenReviewDialog(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '카드를 불러오는데 실패했습니다.');
+      setError(err instanceof Error ? err.message : '패턴을 불러오는데 실패했습니다.');
     }
   };
 
@@ -597,87 +609,87 @@ export default function CollectionsUpgradePage() {
     if (!user?.id || !selectedReviewTag) return;
 
     try {
-      const allCards = await getCards(user.id);
-      const tagCards = allCards.filter((card) => {
-        const cardTags = ensureTagsArray(card.tags);
-        return cardTags.includes(selectedReviewTag);
+      const allPatterns = await getPatterns(user.id);
+      const tagPatterns = allPatterns.filter((pattern) => {
+        const patternTags = ensureTagsArray(pattern.tags);
+        return patternTags.includes(selectedReviewTag);
       });
-      if (tagCards.length === 0) {
-        showSnackbar('선택한 태그가 있는 카드가 없습니다.', 'info');
+      if (tagPatterns.length === 0) {
+        showSnackbar('선택한 태그가 있는 패턴이 없습니다.', 'info');
         return;
       }
       setReviewMode('all');
-      setReviewCards(tagCards);
+      setReviewPatterns(tagPatterns);
       setCurrentReviewIndex(0);
-      setCurrentReviewCard(tagCards[0]);
+      setCurrentReviewPattern(tagPatterns[0]);
       setShowAnswer(false);
       setOpenReviewDialog(true);
       setOpenTagReviewDialog(false);
       setSelectedReviewTag(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '카드를 불러오는데 실패했습니다.');
+      setError(err instanceof Error ? err.message : '패턴을 불러오는데 실패했습니다.');
     }
   };
 
-  const handlePreviousCard = () => {
+  const handlePreviousPattern = () => {
     if (currentReviewIndex > 0) {
       const prevIndex = currentReviewIndex - 1;
       setCurrentReviewIndex(prevIndex);
-      setCurrentReviewCard(reviewCards[prevIndex]);
+      setCurrentReviewPattern(reviewPatterns[prevIndex]);
       setShowAnswer(false);
     }
   };
 
   const handleReviewSuccess = async () => {
-    if (!currentReviewCard) return;
+    if (!currentReviewPattern) return;
 
     try {
-      const updatedCard = await updateCard(currentReviewCard.id, { done: true });
-      setCards((prev) =>
-        prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
+      const updatedPattern = await updatePattern(currentReviewPattern.id, { done: true });
+      setPatterns((prev) =>
+        prev.map((pattern) => (pattern.id === updatedPattern.id ? updatedPattern : pattern))
       );
-      setReviewCards((prev) =>
-        prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
+      setReviewPatterns((prev) =>
+        prev.map((pattern) => (pattern.id === updatedPattern.id ? updatedPattern : pattern))
       );
       loadStats();
-      handleNextCard();
+      handleNextPattern();
     } catch (err) {
       setError(err instanceof Error ? err.message : '복습 상태를 업데이트하는데 실패했습니다.');
     }
   };
 
   const handleReviewFailure = async () => {
-    if (!currentReviewCard) return;
+    if (!currentReviewPattern) return;
 
     try {
-      const updatedCard = await updateCard(currentReviewCard.id, { done: false });
-      setCards((prev) =>
-        prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
+      const updatedPattern = await updatePattern(currentReviewPattern.id, { done: false });
+      setPatterns((prev) =>
+        prev.map((pattern) => (pattern.id === updatedPattern.id ? updatedPattern : pattern))
       );
-      setReviewCards((prev) =>
-        prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
+      setReviewPatterns((prev) =>
+        prev.map((pattern) => (pattern.id === updatedPattern.id ? updatedPattern : pattern))
       );
       loadStats();
-      handleNextCard();
+      handleNextPattern();
     } catch (err) {
       setError(err instanceof Error ? err.message : '복습 상태를 업데이트하는데 실패했습니다.');
     }
   };
 
-  const handleNextCard = () => {
+  const handleNextPattern = () => {
     const nextIndex = currentReviewIndex + 1;
-    if (nextIndex < reviewCards.length) {
+    if (nextIndex < reviewPatterns.length) {
       setCurrentReviewIndex(nextIndex);
-      setCurrentReviewCard(reviewCards[nextIndex]);
+      setCurrentReviewPattern(reviewPatterns[nextIndex]);
       setShowAnswer(false);
     } else {
       setOpenReviewDialog(false);
-      setCurrentReviewCard(null);
-      setReviewCards([]);
+      setCurrentReviewPattern(null);
+      setReviewPatterns([]);
       setCurrentReviewIndex(0);
       setReviewMode('all');
       setShowAnswer(false);
-      showSnackbar('모든 카드 복습을 완료했습니다!', 'success');
+      showSnackbar('모든 패턴 복습을 완료했습니다!', 'success');
     }
   };
 
@@ -701,8 +713,6 @@ export default function CollectionsUpgradePage() {
     return null;
   }
 
-  const reviewCardsCount = stats.incomplete;
-  const completedCardsCount = stats.completed;
 
   return (
     <Box
@@ -759,7 +769,7 @@ export default function CollectionsUpgradePage() {
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h4" component="h1" color="white" fontWeight={500}>
-            Collections & Upgrade
+            Patterns
           </Typography>
         </Stack>
 
@@ -767,7 +777,7 @@ export default function CollectionsUpgradePage() {
           <MuiCard sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)', color: 'white', minWidth: '100px' }}>
             <CardContent>
               <Typography variant="body2" color="inherit" sx={{ opacity: 0.8 }}>
-                전체 카드
+                전체 패턴
               </Typography>
               <Typography variant="h5" fontWeight={600}>
                 {stats.total}
@@ -873,7 +883,7 @@ export default function CollectionsUpgradePage() {
           </Button>
         </Stack>
 
-        {cards.length === 0 ? (
+        {patterns.length === 0 ? (
           <Box
             sx={{
               textAlign: 'center',
@@ -882,10 +892,10 @@ export default function CollectionsUpgradePage() {
             }}
           >
             <Typography variant="h6" sx={{ mb: 2, opacity: 0.7 }}>
-              카드가 없습니다
+              패턴이 없습니다
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.5 }}>
-              + 버튼을 눌러 카드를 추가해보세요
+              + 버튼을 눌러 패턴을 추가해보세요
             </Typography>
           </Box>
         ) : (
@@ -901,9 +911,9 @@ export default function CollectionsUpgradePage() {
                 gap: 2,
               }}
             >
-              {cards.map((card: Card) => (
+              {patterns.map((pattern: Pattern) => (
                 <MuiCard
-                key={card.id}
+                key={pattern.id}
                 sx={{
                   bgcolor: 'rgba(255, 255, 255, 0.1)',
                   color: 'white',
@@ -929,10 +939,10 @@ export default function CollectionsUpgradePage() {
                   }}
                 >
                   {(() => {
-                    const cardTags = ensureTagsArray(card.tags);
-                    const visibleTags = cardTags.slice(0, 2);
-                    const remainingTags = cardTags.slice(2);
-                    const isAddingTag = addingTagCardId === card.id;
+                    const patternTags = ensureTagsArray(pattern.tags);
+                    const visibleTags = patternTags.slice(0, 2);
+                    const remainingTags = patternTags.slice(2);
+                    const isAddingTag = addingTagPatternId === pattern.id;
 
                     return (
                       <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexWrap: 'wrap', gap: 0.5 }}>
@@ -941,7 +951,7 @@ export default function CollectionsUpgradePage() {
                             key={idx}
                             label={tag}
                             size="small"
-                            onDelete={() => handleDeleteTag(card.id, tag)}
+                            onDelete={() => handleDeleteTag(pattern.id, tag)}
                             deleteIcon={
                               <CloseIcon sx={{ fontSize: '0.75rem' }} />
                             }
@@ -979,17 +989,17 @@ export default function CollectionsUpgradePage() {
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' && newTagValue.trim()) {
                                 e.preventDefault();
-                                handleAddTag(card.id, [newTagValue.trim()]);
+                                handleAddTag(pattern.id, [newTagValue.trim()]);
                               } else if (e.key === 'Escape') {
-                                setAddingTagCardId(null);
+                                setAddingTagPatternId(null);
                                 setNewTagValue('');
                               }
                             }}
                             onBlur={() => {
                               if (newTagValue.trim()) {
-                                handleAddTag(card.id, [newTagValue.trim()]);
+                                handleAddTag(pattern.id, [newTagValue.trim()]);
                               } else {
-                                setAddingTagCardId(null);
+                                setAddingTagPatternId(null);
                                 setNewTagValue('');
                               }
                             }}
@@ -1023,7 +1033,7 @@ export default function CollectionsUpgradePage() {
                           <IconButton
                             size="small"
                             onClick={() => {
-                              setAddingTagCardId(card.id);
+                              setAddingTagPatternId(pattern.id);
                               setNewTagValue('');
                             }}
                             sx={{
@@ -1044,9 +1054,9 @@ export default function CollectionsUpgradePage() {
                   })()}
 
                   <Chip
-                    label={card.done ? '완료' : '복습중'}
+                    label={pattern.done ? '완료' : '복습중'}
                     size="small"
-                    color={card.done ? 'success' : 'warning'}
+                    color={pattern.done ? 'success' : 'warning'}
                   />
                 </Box>
 
@@ -1085,12 +1095,12 @@ export default function CollectionsUpgradePage() {
                       <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                           <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                            영어
+                            영어 패턴
                           </Typography>
-                          {editingCardId !== card.id && card.en && (
+                          {editingPatternId !== pattern.id && pattern.pattern_en && (
                             <IconButton
                               size="small"
-                              onClick={() => handlePlayEnglishSpeech(card.en)}
+                              onClick={() => handlePlayEnglishSpeech(pattern.pattern_en)}
                               sx={{
                                 width: '24px',
                                 height: '24px',
@@ -1105,14 +1115,14 @@ export default function CollectionsUpgradePage() {
                             </IconButton>
                           )}
                         </Box>
-                        {editingCardId === card.id ? (
+                        {editingPatternId === pattern.id ? (
                           <TextField
                             fullWidth
                             multiline
                             rows={2}
-                            value={editCardData.en}
+                            value={editPatternData.pattern_en}
                             onChange={(e) =>
-                              setEditCardData((prev) => ({ ...prev, en: e.target.value }))
+                              setEditPatternData((prev) => ({ ...prev, pattern_en: e.target.value }))
                             }
                             disabled={isSaving}
                             sx={{
@@ -1132,22 +1142,22 @@ export default function CollectionsUpgradePage() {
                           />
                         ) : (
                           <Typography variant="body1" fontWeight={500}>
-                            {card.en}
+                            {pattern.pattern_en}
                           </Typography>
                         )}
                       </Box>
                       <Box>
                         <Typography variant="body2" sx={{ opacity: 0.7, mb: 0.5 }}>
-                          한국어
+                          한국어 패턴
                         </Typography>
-                        {editingCardId === card.id ? (
+                        {editingPatternId === pattern.id ? (
                           <TextField
                             fullWidth
                             multiline
                             rows={2}
-                            value={editCardData.ko}
+                            value={editPatternData.pattern_ko}
                             onChange={(e) =>
-                              setEditCardData((prev) => ({ ...prev, ko: e.target.value }))
+                              setEditPatternData((prev) => ({ ...prev, pattern_ko: e.target.value }))
                             }
                             disabled={isSaving}
                             sx={{
@@ -1167,10 +1177,43 @@ export default function CollectionsUpgradePage() {
                           />
                         ) : (
                           <Typography variant="body1" fontWeight={500}>
-                            {card.ko}
+                            {pattern.pattern_ko}
                           </Typography>
                         )}
                       </Box>
+                      {pattern.examples && pattern.examples.length > 0 && (
+                        <Box>
+                          <Typography variant="body2" sx={{ opacity: 0.7, mb: 0.5 }}>
+                            예문
+                          </Typography>
+                          <Stack spacing={0.5}>
+                            {pattern.examples.map((example, idx) => (
+                              <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pl: 1 }}>
+                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                  • {example}
+                                </Typography>
+                                {example && (
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handlePlayEnglishSpeech(example)}
+                                    sx={{
+                                      width: '20px',
+                                      height: '20px',
+                                      color: 'rgba(255, 255, 255, 0.7)',
+                                      '&:hover': {
+                                        color: 'white',
+                                        bgcolor: 'rgba(255, 255, 255, 0.1)',
+                                      },
+                                    }}
+                                  >
+                                    <VolumeUpIcon sx={{ fontSize: '0.875rem' }} />
+                                  </IconButton>
+                                )}
+                              </Box>
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
                     </Stack>
                   </Box>
                 </CardContent>
@@ -1189,17 +1232,17 @@ export default function CollectionsUpgradePage() {
                 >
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Typography variant="caption" sx={{ opacity: 0.6 }}>
-                      복습 횟수: {card.review_count}
+                      복습 횟수: {pattern.review_count}
                     </Typography>
                     <Stack direction="row">
-                      {editingCardId === card.id ? (
+                      {editingPatternId === pattern.id ? (
                         <>
                           <Button
                             size="small"
                             variant="text"
                             color="primary"
                             startIcon={<SaveIcon />}
-                            onClick={() => handleSaveEdit(card.id)}
+                            onClick={() => handleSaveEdit(pattern.id)}
                             disabled={isSaving}
                           >
                             저장
@@ -1220,14 +1263,14 @@ export default function CollectionsUpgradePage() {
                             size="small"
                             variant="text"
                             startIcon={<EditIcon />}
-                            onClick={() => handleStartEdit(card)}
+                            onClick={() => handleStartEdit(pattern)}
                           >
                             편집
                           </Button>
                           <Button
                             size="small"
                             color="error"
-                            onClick={() => handleDeleteCardClick(card.id)}
+                            onClick={() => handleDeletePatternClick(pattern.id)}
                           >
                             삭제
                           </Button>
@@ -1317,9 +1360,9 @@ export default function CollectionsUpgradePage() {
                 }}
               />
             )}
-              {!hasMore && cards.length > 0 && (
+              {!hasMore && patterns.length > 0 && (
                 <Box sx={{ textAlign: 'center', py: 4, color: 'white', opacity: 0.5 }}>
-                  <Typography variant="body2">모든 카드를 불러왔습니다.</Typography>
+                  <Typography variant="body2">모든 패턴을 불러왔습니다.</Typography>
                 </Box>
               )}
             </>
@@ -1353,7 +1396,7 @@ export default function CollectionsUpgradePage() {
           },
         }}
       >
-        <DialogTitle sx={{ pb:0 }}>카드 추가</DialogTitle>
+        <DialogTitle sx={{ pb:0 }}>패턴 추가</DialogTitle>
         <DialogContent
           sx={{
             display: 'flex',
@@ -1370,8 +1413,8 @@ export default function CollectionsUpgradePage() {
             size="small"
             sx={{ mt: 2 }}
             options={availableTags}
-            value={newCardTags}
-            onChange={(_, newValue) => setNewCardTags(newValue)}
+            value={newPatternTags}
+            onChange={(_, newValue) => setNewPatternTags(newValue)}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1393,42 +1436,73 @@ export default function CollectionsUpgradePage() {
             fullWidth
           />
           <TextField
-            label="영어"
+            label="영어 패턴"
             fullWidth
             multiline
-            rows={4}
-            value={newCard.en}
-            onChange={(e) => setNewCard((prev) => ({ ...prev, en: e.target.value }))}
+            rows={3}
+            value={newPattern.pattern_en}
+            onChange={(e) => setNewPattern((prev) => ({ ...prev, pattern_en: e.target.value }))}
             disabled={isSubmitting}
-            sx={{
-              '& .MuiInputBase-root': {
-                minHeight: '100px',
-              },
-            }}
           />
           <TextField
-            label="한국어"
+            label="한국어 패턴"
             fullWidth
             multiline
-            rows={4}
-            value={newCard.ko}
-            onChange={(e) => setNewCard((prev) => ({ ...prev, ko: e.target.value }))}
+            rows={3}
+            value={newPattern.pattern_ko}
+            onChange={(e) => setNewPattern((prev) => ({ ...prev, pattern_ko: e.target.value }))}
             disabled={isSubmitting}
-            sx={{
-              '& .MuiInputBase-root': {
-                minHeight: '100px',
-              },
-            }}
           />
+          <Box sx={{ width: '100%' }}>
+            <Typography variant="body2" sx={{ mb: 1, opacity: 0.7 }}>
+              예문 (엔터로 추가)
+            </Typography>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="예문을 입력하고 엔터를 누르세요"
+              value={newExampleValue}
+              onChange={(e) => setNewExampleValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newExampleValue.trim()) {
+                  e.preventDefault();
+                  setNewPatternExamples((prev) => [...prev, newExampleValue.trim()]);
+                  setNewExampleValue('');
+                }
+              }}
+              disabled={isSubmitting}
+            />
+            {newPatternExamples.length > 0 && (
+              <Stack direction="row" spacing={0.5} sx={{ mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
+                {newPatternExamples.map((example, idx) => (
+                  <Chip
+                    key={idx}
+                    label={example}
+                    size="small"
+                    onDelete={() => {
+                      setNewPatternExamples((prev) => prev.filter((_, i) => i !== idx));
+                    }}
+                    deleteIcon={<CloseIcon sx={{ fontSize: '0.75rem' }} />}
+                  />
+                ))}
+              </Stack>
+            )}
+          </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={() => setOpenAddDialog(false)} disabled={isSubmitting}>
+          <Button onClick={() => {
+            setOpenAddDialog(false);
+            setNewPattern({ pattern_ko: '', pattern_en: '', examples: [], tags: [] });
+            setNewPatternTags([]);
+            setNewPatternExamples([]);
+            setNewExampleValue('');
+          }} disabled={isSubmitting}>
             취소
           </Button>
           <Button
-            onClick={handleAddCard}
+            onClick={handleAddPattern}
             variant="contained"
-            disabled={isSubmitting || !newCard.ko.trim() || !newCard.en.trim()}
+            disabled={isSubmitting || !newPattern.pattern_ko.trim() || !newPattern.pattern_en.trim()}
           >
             {isSubmitting ? <CircularProgress size={20} /> : '추가'}
           </Button>
@@ -1513,7 +1587,7 @@ export default function CollectionsUpgradePage() {
         open={openReviewDialog}
         onClose={() => {
           setOpenReviewDialog(false);
-          setReviewCards([]);
+          setReviewPatterns([]);
           setCurrentReviewIndex(0);
           setReviewMode('all');
           setShowAnswer(false);
@@ -1532,13 +1606,13 @@ export default function CollectionsUpgradePage() {
           }}
         >
           <Typography variant="body2" sx={{ opacity: 0.7 }}>
-            진행 상황: {currentReviewCard ? `${currentReviewIndex + 1} / ${reviewCards.length}` : '0 / 0'}
+            진행 상황: {currentReviewPattern ? `${currentReviewIndex + 1} / ${reviewPatterns.length}` : '0 / 0'}
           </Typography>
           <IconButton
             aria-label="close"
             onClick={() => {
               setOpenReviewDialog(false);
-              setReviewCards([]);
+              setReviewPatterns([]);
               setCurrentReviewIndex(0);
               setReviewMode('all');
               setShowAnswer(false);
@@ -1550,23 +1624,23 @@ export default function CollectionsUpgradePage() {
         </Box>
 
         <DialogContent>
-          {currentReviewCard && (
+          {currentReviewPattern && (
             <Stack spacing={3}>
               <Box>
                 <Typography variant="body2" sx={{ opacity: 0.7, mb: 1 }}>
-                  한국어
+                  한국어 패턴
                 </Typography>
-                <Typography variant="h6">{currentReviewCard.ko}</Typography>
+                <Typography variant="h6">{currentReviewPattern.pattern_ko}</Typography>
               </Box>
               <Box sx={{ position: 'relative' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                   <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                    영어
+                    영어 패턴
                   </Typography>
-                  {currentReviewCard.en && (
+                  {currentReviewPattern.pattern_en && (
                     <IconButton
                       size="small"
-                      onClick={() => handlePlayEnglishSpeech(currentReviewCard.en)}
+                      onClick={() => handlePlayEnglishSpeech(currentReviewPattern.pattern_en)}
                       sx={{
                         width: '24px',
                         height: '24px',
@@ -1582,7 +1656,7 @@ export default function CollectionsUpgradePage() {
                   )}
                 </Box>
                 <Typography variant="h6" color="primary" sx={{ minHeight: '32px' }}>
-                  {currentReviewCard.en}
+                  {currentReviewPattern.pattern_en}
                 </Typography>
                 {!showAnswer && (
                   <Box
@@ -1608,12 +1682,67 @@ export default function CollectionsUpgradePage() {
                   </Box>
                 )}
               </Box>
+              {currentReviewPattern.examples && currentReviewPattern.examples.length > 0 && (
+                <Box>
+                  <Typography variant="body2" sx={{ opacity: 0.7, mb: 1 }}>
+                    예문
+                  </Typography>
+                  <Box
+                    sx={{
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      pr: 1,
+                      '&::-webkit-scrollbar': {
+                        width: '6px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: 'rgba(0, 0, 0, 0.1)',
+                        borderRadius: '3px',
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: 'rgba(0, 0, 0, 0.3)',
+                        borderRadius: '3px',
+                        '&:hover': {
+                          background: 'rgba(0, 0, 0, 0.5)',
+                        },
+                      },
+                    }}
+                  >
+                    <Stack spacing={0.5}>
+                      {currentReviewPattern.examples.map((example, idx) => (
+                        <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                            • {example}
+                          </Typography>
+                          {example && (
+                            <IconButton
+                              size="small"
+                              onClick={() => handlePlayEnglishSpeech(example)}
+                              sx={{
+                                width: '20px',
+                                height: '20px',
+                                color: 'rgba(0, 0, 0, 0.7)',
+                                '&:hover': {
+                                  color: 'primary.main',
+                                  bgcolor: 'rgba(0, 0, 0, 0.05)',
+                                },
+                              }}
+                            >
+                              <VolumeUpIcon sx={{ fontSize: '0.875rem' }} />
+                            </IconButton>
+                          )}
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Box>
+                </Box>
+              )}
             </Stack>
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2, width: '100%', justifyContent: 'space-between' }}>
           <IconButton
-            onClick={handlePreviousCard}
+            onClick={handlePreviousPattern}
             disabled={currentReviewIndex === 0}
             sx={{
               border: '1px solid',
@@ -1660,8 +1789,8 @@ export default function CollectionsUpgradePage() {
             </Button>
           </Stack>
           <IconButton
-            onClick={handleNextCard}
-            disabled={currentReviewIndex >= reviewCards.length - 1}
+            onClick={handleNextPattern}
+            disabled={currentReviewIndex >= reviewPatterns.length - 1}
             sx={{
               border: '1px solid',
               borderColor: 'divider',
@@ -1681,17 +1810,17 @@ export default function CollectionsUpgradePage() {
         aria-labelledby="delete-dialog-title"
         aria-describedby="delete-dialog-description"
       >
-        <DialogTitle id="delete-dialog-title">카드 삭제</DialogTitle>
+        <DialogTitle id="delete-dialog-title">패턴 삭제</DialogTitle>
         <DialogContent>
           <Typography id="delete-dialog-description">
-            이 카드를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            이 패턴을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteConfirmClose} color="inherit">
             취소
           </Button>
-          <Button onClick={handleDeleteCard} color="error" variant="contained">
+          <Button onClick={handleDeletePattern} color="error" variant="contained">
             삭제
           </Button>
         </DialogActions>
