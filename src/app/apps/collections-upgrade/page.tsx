@@ -446,7 +446,7 @@ export default function CollectionsUpgradePage() {
   const handlePlayEnglishSpeech = async (text: string) => {
     try {
       const { speakText } = await import('@/lib/tts');
-      await speakText(text, 'en-US', true);
+      await speakText(text, 'en-US');
     } catch (error) {
       console.error('음성 재생 오류:', error);
       showSnackbar(

@@ -453,7 +453,7 @@ export default function PatternsPage() {
   const handlePlayEnglishSpeech = async (text: string) => {
     try {
       const { speakText } = await import('@/lib/tts');
-      await speakText(text, 'en-US', true);
+      await speakText(text, 'en-US');
     } catch (error) {
       console.error('음성 재생 오류:', error);
       showSnackbar(
@@ -1750,31 +1750,31 @@ export default function PatternsPage() {
               transition: 'opacity 0.2s ease',
             }}
           >
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<CheckCircleIcon />}
-              onClick={handleReviewSuccess}
-              sx={{
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                px: { xs: 1.5, sm: 2 },
-              }}
-            >
-              복습 성공
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              startIcon={<CancelIcon />}
-              onClick={handleReviewFailure}
-              sx={{
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                px: { xs: 1.5, sm: 2 },
-              }}
-            >
-              복습 실패
-            </Button>
-          </Stack>
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<CheckCircleIcon />}
+                onClick={handleReviewSuccess}
+                sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  px: { xs: 1.5, sm: 2 },
+                }}
+              >
+                복습 성공
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<CancelIcon />}
+                onClick={handleReviewFailure}
+                sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  px: { xs: 1.5, sm: 2 },
+                }}
+              >
+                복습 실패
+              </Button>
+            </Stack>
           <IconButton
             onClick={handleNextPattern}
             disabled={currentReviewIndex >= reviewPatterns.length - 1}
