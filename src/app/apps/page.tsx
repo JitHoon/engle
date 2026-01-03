@@ -15,6 +15,7 @@ import {
   Menu,
   MenuItem,
   Tooltip,
+  Fade,
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import VerifiedIcon from '@mui/icons-material/Verified';
@@ -263,21 +264,21 @@ export default function AppsPage() {
                   {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
                 </Avatar>
                 <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="subtitle1" fontWeight={500} noWrap>
-                      {user?.displayName || '이름 없음'}
-                    </Typography>
-                    {user?.emailVerified && (
-                      <Chip
-                        icon={<VerifiedIcon />}
-                        label="인증됨"
-                        size="small"
-                        color="success"
-                        variant="outlined"
+                  {user?.displayName || '이름 없음'}
+                </Typography>
+                {user?.emailVerified && (
+                  <Chip
+                    icon={<VerifiedIcon />}
+                    label="인증됨"
+                    size="small"
+                    color="success"
+                    variant="outlined"
                         sx={{ height: 20, fontSize: '0.6875rem' }}
-                      />
-                    )}
-                  </Stack>
+                  />
+                )}
+              </Stack>
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -286,8 +287,8 @@ export default function AppsPage() {
                   >
                     {user?.email}
                   </Typography>
-                </Stack>
-              </Stack>
+            </Stack>
+          </Stack>
             </Box>
 
             <Divider />
@@ -313,22 +314,18 @@ export default function AppsPage() {
           minHeight: 0, // flexbox에서 overflow 방지
         }}
       >
+        {/* 모바일: 세로로 나열된 직사각형 버튼 */}
         <Box
           sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'repeat(2, 1fr)', // 모바일: 2열
-              sm: 'repeat(4, 1fr)', // 태블릿 이상: 4열
-            },
-            gap: { xs: 3, sm: 4 },
-            maxWidth: 800,
+            display: { xs: 'flex', sm: 'none' },
+            flexDirection: 'column',
+            gap: 2,
             width: '100%',
+            px: 2,
             mb: 8,
-            justifyContent: 'center',
-            alignItems: 'center',
           }}
         >
-          {apps.map((app) => {
+          {apps.map((app, index) => {
             const IconComponent = app.icon;
             // 배경 색상에 따라 아이콘 색상 결정
             const iconColor =
@@ -340,43 +337,123 @@ export default function AppsPage() {
             const isBlackBox = app.color === colors.black.pure;
 
             return (
-              <Tooltip key={app.id} title={app.name} arrow placement="top">
+              <Fade
+                key={app.id}
+                in={true}
+                timeout={600}
+                style={{ transitionDelay: `${index * 100}ms` }}
+              >
                 <Box
                   onClick={() => handleAppClick(app.route)}
                   sx={{
                     width: '100%',
-                    maxWidth: { xs: '120px', sm: '110px', md: '120px' },
-                    aspectRatio: '1',
+                    height: '80px',
                     cursor: 'pointer',
-                    borderRadius: app.shape === 'circle' ? '50%' : '16px', // 원형 또는 둥근 사각형
-                    overflow: 'hidden',
-                    border: isBlackBox ? '1px solid rgba(255, 255, 255, 0.3)' : 'none', // 검은색 박스에만 얇고 연한 흰색 테두리
-                    backgroundColor: app.color, // 각 앱의 색상 배경
+                    borderRadius: '16px',
+                    border: isBlackBox ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+                    backgroundColor: app.color,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    gap: 2,
+                    px: 3,
                     transition: 'all 0.3s ease',
-                    boxShadow: 'none', // 그림자 효과 제거
-                    justifySelf: 'center', // 그리드 셀 내에서 중앙 정렬
-                    '&:hover': {
-                      transform: 'translateY(-8px) scale(1.05)',
-                      boxShadow: 'none', // hover 시에도 그림자 효과 제거
+                    '&:active': {
+                      transform: 'scale(0.98)',
                     },
                   }}
                 >
                   <IconComponent
                     sx={{
                       color: iconColor,
-                      fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
+                      fontSize: '2rem',
                     }}
                   />
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: iconColor,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {app.name}
+                  </Typography>
                 </Box>
-              </Tooltip>
+              </Fade>
+            );
+          })}
+        </Box>
+
+        {/* 데스크톱: 그리드 레이아웃 */}
+        <Box
+          sx={{
+            display: { xs: 'none', sm: 'grid' },
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: 4,
+            maxWidth: 800,
+            width: '100%',
+            mb: 8,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          {apps.map((app, index) => {
+            const IconComponent = app.icon;
+            // 배경 색상에 따라 아이콘 색상 결정
+            const iconColor =
+              app.color === colors.white.pure
+                ? colors.black.pure // 흰색 배경: 검은색 아이콘
+                : 'white'; // 검은색 또는 primary 배경: 흰색 아이콘
+
+            // 검은색 박스인지 확인
+            const isBlackBox = app.color === colors.black.pure;
+
+            return (
+              <Fade
+                key={app.id}
+                in={true}
+                timeout={600}
+                style={{ transitionDelay: `${index * 100}ms` }}
+              >
+                <Box>
+                  <Tooltip title={app.name} arrow placement="top">
+                    <Box
+                      onClick={() => handleAppClick(app.route)}
+                      sx={{
+                        width: '100%',
+                        maxWidth: { sm: '110px', md: '120px' },
+                        aspectRatio: '1',
+                        cursor: 'pointer',
+                        borderRadius: app.shape === 'circle' ? '50%' : '16px', // 원형 또는 둥근 사각형
+                        overflow: 'hidden',
+                        border: isBlackBox ? '1px solid rgba(255, 255, 255, 0.3)' : 'none', // 검은색 박스에만 얇고 연한 흰색 테두리
+                        backgroundColor: app.color, // 각 앱의 색상 배경
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.3s ease',
+                        boxShadow: 'none', // 그림자 효과 제거
+                        justifySelf: 'center', // 그리드 셀 내에서 중앙 정렬
+                        '&:hover': {
+                          transform: 'translateY(-8px) scale(1.05)',
+                          boxShadow: 'none', // hover 시에도 그림자 효과 제거
+                        },
+                      }}
+                    >
+                      <IconComponent
+                        sx={{
+                          color: iconColor,
+                          fontSize: { sm: '3rem', md: '3.5rem' },
+                        }}
+                      />
+                    </Box>
+                  </Tooltip>
+                </Box>
+              </Fade>
             );
           })}
         </Box>
       </Box>
-      </Container>
+    </Container>
     </Box>
   );
 }
