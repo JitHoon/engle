@@ -3,7 +3,7 @@ export { colors } from './colors';
 export type { Colors, ColorKey } from './colors';
 
 // TTS
-export { speakText, speakWithGoogleTTS, speakWithWebSpeechAPI } from './tts';
+export { speakText, cancelSpeech, pauseSpeech, resumeSpeech } from './tts';
 
 // Supabase
 export { createClient, createServerClient } from './supabase';
