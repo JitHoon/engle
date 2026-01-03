@@ -111,10 +111,10 @@ export default function Home() {
       >
         {/* Engle 서비스명 - 원 위에 */}
         <Fade in={mounted} timeout={1000} style={{ transitionDelay: `${ANIMATION_TIMING.title}ms` }}>
-          <Typography
+        <Typography
             variant="h1"
-            component="h1"
-            sx={{
+          component="h1"
+          sx={{
               fontWeight: 600,
               mb: LAYOUT_CONFIG.spacingBetween,
               color: 'white',
@@ -123,10 +123,10 @@ export default function Home() {
               letterSpacing: '-0.02em',
               pointerEvents: 'none',
               transform: `translateY(${LAYOUT_CONFIG.titleOffsetY}px)`,
-            }}
-          >
+          }}
+        >
             Engle
-          </Typography>
+        </Typography>
         </Fade>
 
         {/* 버튼들 - 원 아래에 */}

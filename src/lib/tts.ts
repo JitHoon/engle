@@ -1,9 +1,8 @@
 /**
  * Text-to-Speech 유틸리티
  *
- * Google Translate TTS API를 사용하여 자연스러운 영어 음성을 제공합니다.
- * iOS에서는 Web Speech API를 사용합니다 (CORS 제한으로 인해).
- * 무료로 사용 가능하며, Web Speech API보다 더 자연스러운 음질을 제공합니다.
+ * Web Speech API를 직접 사용하여 텍스트를 음성으로 변환합니다.
+ * 여성 음성을 자동으로 선택합니다.
  */
 
 /**
@@ -14,132 +13,190 @@ function isIOS(): boolean {
 }
 
 /**
- * Google Translate TTS를 사용하여 텍스트를 음성으로 변환
- * @param text - 음성으로 변환할 텍스트
- * @param lang - 언어 코드 (기본값: 'en-US')
- * @returns Promise<void>
+ * 음성 목록이 로드될 때까지 대기
  */
-export async function speakWithGoogleTTS(
-  text: string,
-  lang: string = 'en-US'
-): Promise<void> {
-  try {
-    // 텍스트를 URL 인코딩
-    const encodedText = encodeURIComponent(text);
+function getVoices(): Promise<SpeechSynthesisVoice[]> {
+  return new Promise((resolve) => {
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      resolve(voices);
+      return;
+    }
 
-    // Google Translate TTS API URL
-    // tl: target language (en-US -> en)
-    const langCode = lang.split('-')[0]; // 'en-US' -> 'en'
-    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${langCode}&client=tw-ob&q=${encodedText}`;
-
-    // 오디오 재생
-    const audio = new Audio(ttsUrl);
-    audio.crossOrigin = 'anonymous';
-
-    return new Promise((resolve, reject) => {
-      audio.onended = () => resolve();
-      audio.onerror = (error) => {
-        console.error('TTS 오류:', error);
-        reject(new Error('음성 재생에 실패했습니다.'));
-      };
-      audio.play().catch((error) => {
-        console.error('오디오 재생 오류:', error);
-        reject(new Error('음성 재생에 실패했습니다.'));
-      });
-    });
-  } catch (error) {
-    console.error('TTS 처리 오류:', error);
-    throw new Error('음성 재생에 실패했습니다.');
-  }
+    // voiceschanged 이벤트를 기다림
+    window.speechSynthesis.onvoiceschanged = () => {
+      resolve(window.speechSynthesis.getVoices());
+    };
+  });
 }
 
 /**
- * Web Speech API를 사용하여 텍스트를 음성으로 변환 (폴백)
- * @param text - 음성으로 변환할 텍스트
- * @param lang - 언어 코드 (기본값: 'en-US')
+ * 여성 음성 찾기 (미국 영어 우선, 자연스러운 음성 우선)
  */
-export function speakWithWebSpeechAPI(text: string, lang: string = 'en-US'): void {
-  if (!('speechSynthesis' in window)) {
-    throw new Error('이 브라우저는 음성 재생을 지원하지 않습니다.');
+function findFemaleVoice(
+  voices: SpeechSynthesisVoice[],
+  lang: string = 'en-US'
+): SpeechSynthesisVoice | null {
+  if (isIOS()) {
+    // iOS: 자연스러운 Apple 여성 음성 우선 (Samantha가 가장 자연스러움)
+    const preferredVoices = [
+      voices.find((v) => v.name.includes('Samantha') && v.lang === 'en-US'),
+      voices.find((v) => v.name.includes('Samantha') && v.lang.startsWith('en-US')),
+      voices.find((v) => v.name.includes('Karen') && v.lang === 'en-US'),
+      voices.find((v) => v.name.includes('Victoria') && v.lang === 'en-US'),
+      voices.find((v) => v.name.includes('Female') && v.lang === 'en-US'),
+      voices.find((v) => v.lang === 'en-US' && !v.name.includes('GB') && !v.name.includes('British')),
+    ].filter(Boolean) as SpeechSynthesisVoice[];
+
+    return preferredVoices[0] || null;
   }
 
-  window.speechSynthesis.cancel();
+  // 다른 플랫폼: Neural/Premium 등 자연스러운 음성 우선
+  const preferredVoices = [
+    // Neural voices (가장 자연스러움)
+    voices.find((v) => v.name.includes('Neural') && v.name.includes('Female') && v.lang === 'en-US'),
+    voices.find((v) => v.name.includes('Neural') && v.lang === 'en-US' && !v.name.includes('GB')),
+    // Premium voices
+    voices.find((v) => v.name.includes('Premium') && v.name.includes('Female') && v.lang === 'en-US'),
+    // Google US English Female (자연스러운 음성)
+    voices.find((v) => v.name.includes('Google') && v.name.includes('US English Female') && v.lang.startsWith('en')),
+    voices.find((v) => v.name.includes('Google') && v.name.includes('Female') && v.lang === 'en-US'),
+    // Microsoft 자연스러운 여성 음성
+    voices.find((v) => v.name.includes('Microsoft') && (v.name.includes('Aria') || v.name.includes('Jenny')) && v.lang === 'en-US'),
+    voices.find((v) => v.name.includes('Microsoft') && v.name.includes('Female') && v.lang === 'en-US'),
+    // Apple 자연스러운 음성
+    voices.find((v) => v.name.includes('Samantha') && v.lang === 'en-US'),
+    voices.find((v) => v.name.includes('Karen') && v.lang === 'en-US'),
+    // 일반적인 US Female
+    voices.find((v) => v.name.includes('US') && v.name.includes('Female') && v.lang.startsWith('en')),
+    voices.find((v) => v.name.includes('Female') && v.lang === 'en-US'),
+    voices.find((v) => v.name.includes('Zira') && v.lang === 'en-US'),
+    // 마지막 폴백
+    voices.find((v) => v.lang === 'en-US' && !v.name.includes('GB') && !v.name.includes('British')),
+  ].filter(Boolean) as SpeechSynthesisVoice[];
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang;
-  utterance.rate = 0.9; // 약간 느리게 (더 자연스럽게)
-  utterance.pitch = 1.0;
-  utterance.volume = 1.0;
+  return preferredVoices[0] || null;
+}
 
-  // 더 나은 voice 선택 로직
-  const voices = window.speechSynthesis.getVoices();
+/**
+ * 텍스트를 발화 객체로 변환 (긴 문장 처리)
+ */
+function createUtterances(
+  text: string,
+  lang: string = 'en-US',
+  voice: SpeechSynthesisVoice | null
+): SpeechSynthesisUtterance[] {
+  // 줄바꿈 기준으로 문장 나누기
+  const lines = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
 
-  // iOS에서는 Apple voices 우선, 그 외에는 Google/Microsoft voices 우선
-  const preferredVoices = isIOS()
-    ? [
-        // Apple voices (iOS Safari)
-        voices.find((v) => v.name.includes('Samantha') && v.lang.startsWith('en')),
-        voices.find((v) => v.name.includes('Alex') && v.lang.startsWith('en')),
-        voices.find((v) => v.name.includes('Karen') && v.lang.startsWith('en')),
-        voices.find((v) => v.name.includes('Daniel') && v.lang.startsWith('en')),
-        voices.find((v) => v.lang.startsWith('en-US')),
-        voices.find((v) => v.lang.startsWith('en')),
-      ]
-    : [
-        // Google voices (Chrome)
-        voices.find((v) => v.name.includes('Google') && v.lang.startsWith('en')),
-        // Microsoft voices (Edge)
-        voices.find((v) => v.name.includes('Microsoft') && v.lang.startsWith('en')),
-        // Apple voices (Safari)
-        voices.find((v) => v.name.includes('Samantha') && v.lang.startsWith('en')),
-        voices.find((v) => v.name.includes('Alex') && v.lang.startsWith('en')),
-        // 일반적인 US voices
-        voices.find((v) => v.lang.startsWith('en-US') && v.name.includes('US')),
-        voices.find((v) => v.lang.startsWith('en-US')),
-        // 영어 voices
-        voices.find((v) => v.lang.startsWith('en')),
-      ];
+  return lines.map((line) => {
+    const utterance = new SpeechSynthesisUtterance(line);
+    utterance.lang = lang;
 
-  const filteredVoices = preferredVoices.filter(Boolean);
+    // 더 자연스러운 음성을 위한 설정
+    utterance.rate = 0.85; // 약간 느리게 (0.85가 더 자연스러움)
+    utterance.pitch = 1.05; // 약간 높은 피치 (더 생동감 있게)
+    utterance.volume = 1.0;
 
-  if (filteredVoices.length > 0) {
-    utterance.voice = filteredVoices[0] as SpeechSynthesisVoice;
-  }
+    if (voice) {
+      utterance.voice = voice;
+    }
 
-  window.speechSynthesis.speak(utterance);
+    return utterance;
+  });
 }
 
 /**
  * 텍스트를 음성으로 변환
- * iOS에서는 Web Speech API를 직접 사용 (CORS 제한으로 인해)
- * 그 외 기기에서는 Google TTS 우선, 실패 시 Web Speech API 폴백
  * @param text - 음성으로 변환할 텍스트
  * @param lang - 언어 코드 (기본값: 'en-US')
- * @param useGoogleTTS - Google TTS 사용 여부 (기본값: true, iOS에서는 무시됨)
+ * @returns Promise<void>
  */
 export async function speakText(
   text: string,
-  lang: string = 'en-US',
-  useGoogleTTS: boolean = true
+  lang: string = 'en-US'
 ): Promise<void> {
-  // iOS에서는 Web Speech API를 직접 사용 (CORS 제한으로 Google TTS가 작동하지 않음)
-  if (isIOS()) {
-    speakWithWebSpeechAPI(text, lang);
+  if (!('speechSynthesis' in window)) {
+    throw new Error('이 브라우저는 음성 재생을 지원하지 않습니다.');
+  }
+
+  // 기존 재생 중지
+  window.speechSynthesis.cancel();
+
+  // 음성 목록 로드 대기
+  const voices = await getVoices();
+
+  // 여성 음성 찾기
+  const femaleVoice = findFemaleVoice(voices, lang);
+
+  // 텍스트를 발화 객체로 변환
+  const utterances = createUtterances(text, lang, femaleVoice);
+
+  if (utterances.length === 0) {
     return;
   }
 
-  // iOS가 아닌 경우에만 Google TTS 시도
-  if (useGoogleTTS) {
-    try {
-      await speakWithGoogleTTS(text, lang);
-      return;
-    } catch (error) {
-      console.warn('Google TTS 실패, Web Speech API로 폴백:', error);
-      // 폴백: Web Speech API 사용
-      speakWithWebSpeechAPI(text, lang);
-    }
-  } else {
-    speakWithWebSpeechAPI(text, lang);
+  // 순차적으로 재생
+  return new Promise((resolve, reject) => {
+    let currentIndex = 0;
+    let hasError = false;
+
+    const speakNext = () => {
+      if (currentIndex >= utterances.length) {
+        resolve();
+        return;
+      }
+
+      const utterance = utterances[currentIndex];
+      currentIndex++;
+
+      utterance.onend = () => {
+        if (!hasError) {
+          speakNext();
+        }
+      };
+
+      utterance.onerror = (error) => {
+        hasError = true;
+        console.error('음성 재생 오류:', error);
+        reject(new Error('음성 재생에 실패했습니다.'));
+      };
+
+      window.speechSynthesis.speak(utterance);
+    };
+
+    speakNext();
+  });
+}
+
+/**
+ * 음성 재생 중지
+ */
+export function cancelSpeech(): void {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
   }
 }
 
+/**
+ * 음성 재생 일시 정지
+ * 주의: 안드로이드에서는 지원되지 않을 수 있음
+ */
+export function pauseSpeech(): void {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.pause();
+  }
+}
+
+/**
+ * 음성 재생 재개
+ * 주의: 안드로이드에서는 지원되지 않을 수 있음
+ */
+export function resumeSpeech(): void {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.resume();
+  }
+}
