@@ -85,5 +85,5 @@ export const colors = {
   },
 } as const;
 
-export type colors = typeof colors;
-export type ColorKey = keyof colors;
+export type Colors = typeof colors;
+export type ColorKey = keyof typeof colors;
