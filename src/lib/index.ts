@@ -3,7 +3,18 @@ export { colors } from './colors';
 export type { Colors, ColorKey } from './colors';
 
 // TTS
-export { speakText, cancelSpeech, pauseSpeech, resumeSpeech } from './tts';
+export {
+  speakText,
+  cancelSpeech,
+  pauseSpeech,
+  resumeSpeech,
+  isSpeaking,
+  isTTSSupported,
+  initializeTTS,
+  getAvailableEnglishVoices,
+  setVoice,
+  getCurrentVoice,
+} from './tts';
 
 // Supabase
 export { createClient, createServerClient } from './supabase';

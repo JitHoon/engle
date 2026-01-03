@@ -452,8 +452,10 @@ export default function PatternsPage() {
 
   const handlePlayEnglishSpeech = async (text: string) => {
     try {
-      const { speakText } = await import('@/lib/tts');
-      await speakText(text, 'en-US');
+      const { speakText, initializeTTS } = await import('@/lib/tts');
+      // iOS Safari 호환성을 위해 사용자 상호작용 시 초기화
+      await initializeTTS();
+      await speakText(text);
     } catch (error) {
       console.error('음성 재생 오류:', error);
       showSnackbar(
