@@ -2,8 +2,16 @@
  * Text-to-Speech 유틸리티
  *
  * Google Translate TTS API를 사용하여 자연스러운 영어 음성을 제공합니다.
+ * iOS에서는 Web Speech API를 사용합니다 (CORS 제한으로 인해).
  * 무료로 사용 가능하며, Web Speech API보다 더 자연스러운 음질을 제공합니다.
  */
+
+/**
+ * iOS 기기인지 확인
+ */
+function isIOS(): boolean {
+  return /iPhone|iPad|iPod/.test(navigator.userAgent);
+}
 
 /**
  * Google Translate TTS를 사용하여 텍스트를 음성으로 변환
@@ -66,40 +74,61 @@ export function speakWithWebSpeechAPI(text: string, lang: string = 'en-US'): voi
   // 더 나은 voice 선택 로직
   const voices = window.speechSynthesis.getVoices();
 
-  // 우선순위: Google voices > Microsoft voices > 기본 voices
-  const preferredVoices = [
-    // Google voices (Chrome)
-    voices.find((v) => v.name.includes('Google') && v.lang.startsWith('en')),
-    // Microsoft voices (Edge)
-    voices.find((v) => v.name.includes('Microsoft') && v.lang.startsWith('en')),
-    // Apple voices (Safari)
-    voices.find((v) => v.name.includes('Samantha') && v.lang.startsWith('en')),
-    voices.find((v) => v.name.includes('Alex') && v.lang.startsWith('en')),
-    // 일반적인 US voices
-    voices.find((v) => v.lang.startsWith('en-US') && v.name.includes('US')),
-    voices.find((v) => v.lang.startsWith('en-US')),
-    // 영어 voices
-    voices.find((v) => v.lang.startsWith('en')),
-  ].filter(Boolean);
+  // iOS에서는 Apple voices 우선, 그 외에는 Google/Microsoft voices 우선
+  const preferredVoices = isIOS()
+    ? [
+        // Apple voices (iOS Safari)
+        voices.find((v) => v.name.includes('Samantha') && v.lang.startsWith('en')),
+        voices.find((v) => v.name.includes('Alex') && v.lang.startsWith('en')),
+        voices.find((v) => v.name.includes('Karen') && v.lang.startsWith('en')),
+        voices.find((v) => v.name.includes('Daniel') && v.lang.startsWith('en')),
+        voices.find((v) => v.lang.startsWith('en-US')),
+        voices.find((v) => v.lang.startsWith('en')),
+      ]
+    : [
+        // Google voices (Chrome)
+        voices.find((v) => v.name.includes('Google') && v.lang.startsWith('en')),
+        // Microsoft voices (Edge)
+        voices.find((v) => v.name.includes('Microsoft') && v.lang.startsWith('en')),
+        // Apple voices (Safari)
+        voices.find((v) => v.name.includes('Samantha') && v.lang.startsWith('en')),
+        voices.find((v) => v.name.includes('Alex') && v.lang.startsWith('en')),
+        // 일반적인 US voices
+        voices.find((v) => v.lang.startsWith('en-US') && v.name.includes('US')),
+        voices.find((v) => v.lang.startsWith('en-US')),
+        // 영어 voices
+        voices.find((v) => v.lang.startsWith('en')),
+      ];
 
-  if (preferredVoices.length > 0) {
-    utterance.voice = preferredVoices[0] as SpeechSynthesisVoice;
+  const filteredVoices = preferredVoices.filter(Boolean);
+
+  if (filteredVoices.length > 0) {
+    utterance.voice = filteredVoices[0] as SpeechSynthesisVoice;
   }
 
   window.speechSynthesis.speak(utterance);
 }
 
 /**
- * 텍스트를 음성으로 변환 (Google TTS 우선, 실패 시 Web Speech API 폴백)
+ * 텍스트를 음성으로 변환
+ * iOS에서는 Web Speech API를 직접 사용 (CORS 제한으로 인해)
+ * 그 외 기기에서는 Google TTS 우선, 실패 시 Web Speech API 폴백
  * @param text - 음성으로 변환할 텍스트
  * @param lang - 언어 코드 (기본값: 'en-US')
- * @param useGoogleTTS - Google TTS 사용 여부 (기본값: true)
+ * @param useGoogleTTS - Google TTS 사용 여부 (기본값: true, iOS에서는 무시됨)
  */
 export async function speakText(
   text: string,
   lang: string = 'en-US',
   useGoogleTTS: boolean = true
 ): Promise<void> {
+  // iOS에서는 Web Speech API를 직접 사용 (CORS 제한으로 Google TTS가 작동하지 않음)
+  if (isIOS()) {
+    speakWithWebSpeechAPI(text, lang);
+    return;
+  }
+
+  // iOS가 아닌 경우에만 Google TTS 시도
   if (useGoogleTTS) {
     try {
       await speakWithGoogleTTS(text, lang);
