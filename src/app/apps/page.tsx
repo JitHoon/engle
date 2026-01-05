@@ -68,6 +68,7 @@ export default function AppsPage() {
       color: colors.white.pure, // 흰색
       icon: ArrowUpwardIcon,
       shape: 'square', // 둥근 사각형
+      disabled: false,
     },
     {
       id: 'patterns',
@@ -76,6 +77,7 @@ export default function AppsPage() {
       color: colors.black.pure, // 검은색
       icon: PatternIcon,
       shape: 'square', // 둥근 사각형
+      disabled: false,
     },
     {
       id: 'rephrase',
@@ -84,6 +86,7 @@ export default function AppsPage() {
       color: colors.white.pure, // 흰색
       icon: AutoFixHighIcon,
       shape: 'circle', // 원형
+      disabled: true,
     },
     {
       id: 'topics',
@@ -92,10 +95,12 @@ export default function AppsPage() {
       color: colors.black.pure, // 검은색
       icon: TopicIcon,
       shape: 'circle', // 원형
+      disabled: true,
     },
   ];
 
-  const handleAppClick = (route: string) => {
+  const handleAppClick = (route: string, disabled?: boolean) => {
+    if (disabled) return;
     router.push(route);
   };
 
@@ -344,11 +349,11 @@ export default function AppsPage() {
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <Box
-                  onClick={() => handleAppClick(app.route)}
+                  onClick={() => handleAppClick(app.route, app.disabled)}
                   sx={{
                     width: '100%',
                     height: '80px',
-                    cursor: 'pointer',
+                    cursor: app.disabled ? 'not-allowed' : 'pointer',
                     borderRadius: '16px',
                     border: isBlackBox ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
                     backgroundColor: app.color,
@@ -357,8 +362,9 @@ export default function AppsPage() {
                     gap: 2,
                     px: 3,
                     transition: 'all 0.3s ease',
+                    opacity: app.disabled ? 0.5 : 1,
                     '&:active': {
-                      transform: 'scale(0.98)',
+                      transform: app.disabled ? 'none' : 'scale(0.98)',
                     },
                   }}
                 >
@@ -366,6 +372,7 @@ export default function AppsPage() {
                     sx={{
                       color: iconColor,
                       fontSize: '2rem',
+                      opacity: app.disabled ? 0.6 : 1,
                     }}
                   />
                   <Typography
@@ -373,6 +380,7 @@ export default function AppsPage() {
                     sx={{
                       color: iconColor,
                       fontWeight: 500,
+                      opacity: app.disabled ? 0.6 : 1,
                     }}
                   >
                     {app.name}
@@ -415,14 +423,14 @@ export default function AppsPage() {
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <Box>
-                  <Tooltip title={app.name} arrow placement="top">
+                  <Tooltip title={app.disabled ? `${app.name} (준비 중)` : app.name} arrow placement="top">
                     <Box
-                      onClick={() => handleAppClick(app.route)}
+                      onClick={() => handleAppClick(app.route, app.disabled)}
                       sx={{
                         width: '100%',
                         maxWidth: { sm: '110px', md: '120px' },
                         aspectRatio: '1',
-                        cursor: 'pointer',
+                        cursor: app.disabled ? 'not-allowed' : 'pointer',
                         borderRadius: app.shape === 'circle' ? '50%' : '16px', // 원형 또는 둥근 사각형
                         overflow: 'hidden',
                         border: isBlackBox ? '1px solid rgba(255, 255, 255, 0.3)' : 'none', // 검은색 박스에만 얇고 연한 흰색 테두리
@@ -433,8 +441,9 @@ export default function AppsPage() {
                         transition: 'all 0.3s ease',
                         boxShadow: 'none', // 그림자 효과 제거
                         justifySelf: 'center', // 그리드 셀 내에서 중앙 정렬
+                        opacity: app.disabled ? 0.5 : 1,
                         '&:hover': {
-                          transform: 'translateY(-8px) scale(1.05)',
+                          transform: app.disabled ? 'none' : 'translateY(-8px) scale(1.05)',
                           boxShadow: 'none', // hover 시에도 그림자 효과 제거
                         },
                       }}
@@ -443,6 +452,7 @@ export default function AppsPage() {
                         sx={{
                           color: iconColor,
                           fontSize: { sm: '3rem', md: '3.5rem' },
+                          opacity: app.disabled ? 0.6 : 1,
                         }}
                       />
                     </Box>

@@ -185,6 +185,7 @@ export default function CollectionsUpgradePage() {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState<'all' | 'incomplete' | 'completed'>('all');
   const [showAnswer, setShowAnswer] = useState(false);
+  const [isUpdatingReview, setIsUpdatingReview] = useState(false);
 
   // 카드 편집 상태
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
@@ -443,19 +444,17 @@ export default function CollectionsUpgradePage() {
     }
   };
 
-  const handlePlayEnglishSpeech = async (text: string) => {
-    try {
-      const { speakText, initializeTTS } = await import('@/lib/tts');
-      // iOS Safari 호환성을 위해 사용자 상호작용 시 초기화
-      await initializeTTS();
-      await speakText(text);
-    } catch (error) {
-      console.error('음성 재생 오류:', error);
-      showSnackbar(
-        error instanceof Error ? error.message : '음성 재생에 실패했습니다.',
-        'error'
-      );
-    }
+  const handlePlayEnglishSpeech = (text: string) => {
+    // 음성 재생은 비동기로 실행하되 await하지 않음 (블로킹 방지)
+    import('@/lib/tts')
+      .then(({ speakText }) => speakText(text))
+      .catch((error) => {
+        console.error('음성 재생 오류:', error);
+        showSnackbar(
+          error instanceof Error ? error.message : '음성 재생에 실패했습니다.',
+          'error'
+        );
+      });
   };
 
   const handleDeleteTag = async (cardId: string, tagToDelete: string) => {
@@ -609,6 +608,11 @@ export default function CollectionsUpgradePage() {
   };
 
   const handlePreviousCard = () => {
+    // 음성 재생 중지
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+
     if (currentReviewIndex > 0) {
       const prevIndex = currentReviewIndex - 1;
       setCurrentReviewIndex(prevIndex);
@@ -618,42 +622,115 @@ export default function CollectionsUpgradePage() {
   };
 
   const handleReviewSuccess = async () => {
-    if (!currentReviewCard) return;
+    if (!currentReviewCard || isUpdatingReview) return;
+
+    setIsUpdatingReview(true);
+
+    // 음성 재생 중지
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
 
     try {
-      const updatedCard = await updateCard(currentReviewCard.id, { done: true });
+      const cardId = currentReviewCard.id;
+      const updatedCard = await updateCard(cardId, {
+        done: true,
+        review_count: (currentReviewCard.review_count || 0) + 1,
+      });
+
       setCards((prev) =>
         prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
       );
       setReviewCards((prev) =>
         prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
       );
-      loadStats();
-      handleNextCard();
+
+      await loadStats();
+
+      // 다음 카드로 이동
+      const nextIndex = currentReviewIndex + 1;
+      if (nextIndex < reviewCards.length) {
+        setCurrentReviewIndex(nextIndex);
+        setCurrentReviewCard(reviewCards[nextIndex]);
+        setShowAnswer(false);
+      } else {
+        setOpenReviewDialog(false);
+        setCurrentReviewCard(null);
+        setReviewCards([]);
+        setCurrentReviewIndex(0);
+        setReviewMode('all');
+        setShowAnswer(false);
+        showSnackbar('모든 카드 복습을 완료했습니다!', 'success');
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '복습 상태를 업데이트하는데 실패했습니다.');
+      console.error('복습 성공 처리 오류:', err);
+      showSnackbar(
+        err instanceof Error ? err.message : '복습 상태를 업데이트하는데 실패했습니다.',
+        'error'
+      );
+    } finally {
+      setIsUpdatingReview(false);
     }
   };
 
   const handleReviewFailure = async () => {
-    if (!currentReviewCard) return;
+    if (!currentReviewCard || isUpdatingReview) return;
+
+    setIsUpdatingReview(true);
+
+    // 음성 재생 중지
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
 
     try {
-      const updatedCard = await updateCard(currentReviewCard.id, { done: false });
+      const cardId = currentReviewCard.id;
+      const updatedCard = await updateCard(cardId, {
+        done: false,
+        review_count: (currentReviewCard.review_count || 0) + 1,
+      });
+
       setCards((prev) =>
         prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
       );
       setReviewCards((prev) =>
         prev.map((card) => (card.id === updatedCard.id ? updatedCard : card))
       );
-      loadStats();
-      handleNextCard();
+
+      await loadStats();
+
+      // 다음 카드로 이동
+      const nextIndex = currentReviewIndex + 1;
+      if (nextIndex < reviewCards.length) {
+        setCurrentReviewIndex(nextIndex);
+        setCurrentReviewCard(reviewCards[nextIndex]);
+        setShowAnswer(false);
+      } else {
+        setOpenReviewDialog(false);
+        setCurrentReviewCard(null);
+        setReviewCards([]);
+        setCurrentReviewIndex(0);
+        setReviewMode('all');
+        setShowAnswer(false);
+        showSnackbar('모든 카드 복습을 완료했습니다!', 'success');
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '복습 상태를 업데이트하는데 실패했습니다.');
+      console.error('복습 실패 처리 오류:', err);
+      showSnackbar(
+        err instanceof Error ? err.message : '복습 상태를 업데이트하는데 실패했습니다.',
+        'error'
+      );
+    } finally {
+      setIsUpdatingReview(false);
     }
   };
 
   const handleNextCard = () => {
+    // 음성 재생 중지
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+
     const nextIndex = currentReviewIndex + 1;
     if (nextIndex < reviewCards.length) {
       setCurrentReviewIndex(nextIndex);
@@ -1618,9 +1695,10 @@ export default function CollectionsUpgradePage() {
             direction="row"
             spacing={2}
             sx={{
-              visibility: showAnswer ? 'visible' : 'hidden',
+              display: showAnswer ? 'flex' : 'none',
               opacity: showAnswer ? 1 : 0,
               transition: 'opacity 0.2s ease',
+              pointerEvents: showAnswer ? 'auto' : 'none',
             }}
           >
             <Button
@@ -1628,24 +1706,26 @@ export default function CollectionsUpgradePage() {
               color="success"
               startIcon={<CheckCircleIcon />}
               onClick={handleReviewSuccess}
+              disabled={isUpdatingReview}
               sx={{
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 px: { xs: 1.5, sm: 2 },
               }}
             >
-              복습 성공
+              {isUpdatingReview ? '성공!' : '복습 성공'}
             </Button>
             <Button
               variant="contained"
               color="error"
               startIcon={<CancelIcon />}
               onClick={handleReviewFailure}
+              disabled={isUpdatingReview}
               sx={{
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 px: { xs: 1.5, sm: 2 },
               }}
             >
-              복습 실패
+              {isUpdatingReview ? '실패ㅜ' : '복습 실패'}
             </Button>
           </Stack>
           <IconButton
