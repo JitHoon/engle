@@ -1712,7 +1712,7 @@ export default function CollectionsUpgradePage() {
                 px: { xs: 1.5, sm: 2 },
               }}
             >
-              {isUpdatingReview ? '성공!' : '복습 성공'}
+              복습 성공
             </Button>
             <Button
               variant="contained"
@@ -1725,7 +1725,7 @@ export default function CollectionsUpgradePage() {
                 px: { xs: 1.5, sm: 2 },
               }}
             >
-              {isUpdatingReview ? '실패ㅜ' : '복습 실패'}
+              복습 실패
             </Button>
           </Stack>
           <IconButton
