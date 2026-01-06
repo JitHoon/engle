@@ -262,6 +262,31 @@ export default function PatternsPage() {
     }
   }, [patterns]);
 
+  // 태그 복습 다이얼로그 열 때 모든 태그 로드
+  const handleOpenTagReviewDialog = async () => {
+    if (!user?.id) return;
+
+    try {
+      // 모든 패턴을 조회하여 태그 추출
+      const allPatterns = await getPatterns(user.id);
+      const tags = new Set<string>();
+      allPatterns.forEach((pattern) => {
+        const patternTags = ensureTagsArray(pattern.tags);
+        if (patternTags.length > 0) {
+          patternTags.forEach((tag) => tags.add(tag));
+        }
+      });
+      setAvailableTags(Array.from(tags).sort());
+      setOpenTagReviewDialog(true);
+    } catch (err) {
+      console.error('태그 로드 오류:', err);
+      showSnackbar(
+        err instanceof Error ? err.message : '태그를 불러오는데 실패했습니다.',
+        'error'
+      );
+    }
+  };
+
   const loadStats = async () => {
     if (!user?.id) return;
 
@@ -934,8 +959,8 @@ export default function PatternsPage() {
           <Button
             variant="contained"
             startIcon={<SchoolIcon />}
-            onClick={() => setOpenTagReviewDialog(true)}
-            disabled={availableTags.length === 0}
+            onClick={handleOpenTagReviewDialog}
+            disabled={false}
             sx={{
               width: { xs: '100%', sm: 'auto' },
               '&.Mui-disabled': {
