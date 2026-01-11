@@ -32,3 +32,6 @@ export interface User {
 
 // Auth 관련 타입
 export * from './auth';
+
+// Attendance 관련 타입
+export * from './attendance';

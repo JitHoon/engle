@@ -16,6 +16,7 @@ import {
   MenuItem,
   Tooltip,
   Fade,
+  CircularProgress,
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import VerifiedIcon from '@mui/icons-material/Verified';
@@ -23,10 +24,66 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import PatternIcon from '@mui/icons-material/Pattern';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import TopicIcon from '@mui/icons-material/Topic';
-import { useState } from 'react';
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
+// 커스텀 스마일 아이콘 컴포넌트 (이미지와 유사한 스타일)
+const SmileIcon = ({ size = 24, filled = true }: { size?: number; filled?: boolean }) => {
+  const strokeWidth = Math.max(2.5, size * 0.04); // 크기에 비례하는 두꺼운 테두리
+  const radius = (size - strokeWidth) / 2;
+  const center = size / 2;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      style={{ display: 'block' }}
+    >
+      {/* 원 (스마일 얼굴) - 원 자체가 스마일 */}
+      <circle
+        cx={center}
+        cy={center}
+        r={radius}
+        fill={filled ? '#FFD700' : 'transparent'}
+        stroke="black"
+        strokeWidth={strokeWidth}
+      />
+      {/* 왼쪽 눈 (세로로 긴 타원) - 크기 작게 */}
+      <ellipse
+        cx={center - size * 0.12}
+        cy={center - size * 0.15}
+        rx={size * 0.045}
+        ry={size * 0.11}
+        fill="black"
+      />
+      {/* 오른쪽 눈 (세로로 긴 타원) - 크기 작게 */}
+      <ellipse
+        cx={center + size * 0.12}
+        cy={center - size * 0.15}
+        rx={size * 0.045}
+        ry={size * 0.11}
+        fill="black"
+      />
+      {/* 입 (넓고 위로 올라간 호) - 눈과 조금 더 가깝게 */}
+      <path
+        d={`M ${center - size * 0.25} ${center + size * 0.08} Q ${center} ${center + size * 0.28} ${center + size * 0.25} ${center + size * 0.08}`}
+        fill="none"
+        stroke="black"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+};
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts';
 import { useRouter } from 'next/navigation';
 import { colors } from '@/lib/colors';
+import {
+  getAttendanceRecords,
+  checkAttendance,
+  isTodayAttended,
+} from '@/lib/supabase/attendance';
+import type { Attendance } from '@/types/attendance';
 
 /**
  * Apps 페이지
@@ -40,6 +97,12 @@ export default function AppsPage() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const open = Boolean(anchorEl);
+  const [attendanceAnchorEl, setAttendanceAnchorEl] = useState<null | HTMLElement>(null);
+  const [attendanceRecords, setAttendanceRecords] = useState<Attendance[]>([]);
+  const [isTodayChecked, setIsTodayChecked] = useState(false);
+  const [isCheckingAttendance, setIsCheckingAttendance] = useState(false);
+  const [isLoadingAttendance, setIsLoadingAttendance] = useState(false);
+  const openAttendanceDialog = Boolean(attendanceAnchorEl);
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -56,6 +119,53 @@ export default function AppsPage() {
       router.push('/');
     } catch (error) {
       console.error('Sign out error:', error);
+    }
+  };
+
+  // 출석 체크 다이얼로그 열기
+  const handleOpenAttendanceDialog = async (event: React.MouseEvent<HTMLElement>) => {
+    if (!user?.id) return;
+
+    setAttendanceAnchorEl(event.currentTarget);
+    setIsLoadingAttendance(true);
+
+    try {
+      const [records, todayChecked] = await Promise.all([
+        getAttendanceRecords(user.id),
+        isTodayAttended(user.id),
+      ]);
+      setAttendanceRecords(records);
+      setIsTodayChecked(todayChecked);
+    } catch (error) {
+      console.error('출석 기록 로드 오류:', error);
+    } finally {
+      setIsLoadingAttendance(false);
+    }
+  };
+
+  const handleCloseAttendanceDialog = () => {
+    setAttendanceAnchorEl(null);
+  };
+
+  // 출석 체크
+  const handleCheckAttendance = async () => {
+    if (!user?.id || isTodayChecked) return;
+
+    setIsCheckingAttendance(true);
+
+    try {
+      await checkAttendance(user.id);
+      const [records, todayChecked] = await Promise.all([
+        getAttendanceRecords(user.id),
+        isTodayAttended(user.id),
+      ]);
+      setAttendanceRecords(records);
+      setIsTodayChecked(todayChecked);
+    } catch (error) {
+      console.error('출석 체크 오류:', error);
+      alert(error instanceof Error ? error.message : '출석 체크에 실패했습니다.');
+    } finally {
+      setIsCheckingAttendance(false);
     }
   };
 
@@ -214,23 +324,36 @@ export default function AppsPage() {
           >
             Engle
           </Typography>
-          <IconButton
-            onClick={handleProfileClick}
-            aria-controls={open ? 'user-profile-menu' : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? 'true' : undefined}
-          >
-            <Avatar
-              alt={user?.displayName || 'User'}
+          <Stack direction="row" spacing={1} alignItems="center">
+            <IconButton
+              onClick={handleOpenAttendanceDialog}
               sx={{
-                width: 36,
-                height: 36,
-                bgcolor: 'primary.main',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
               }}
             >
-              {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
-            </Avatar>
-          </IconButton>
+              <EmojiEmotionsIcon />
+            </IconButton>
+            <IconButton
+              onClick={handleProfileClick}
+              aria-controls={open ? 'user-profile-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? 'true' : undefined}
+            >
+              <Avatar
+                alt={user?.displayName || 'User'}
+          sx={{
+                  width: 36,
+                  height: 36,
+                  bgcolor: 'primary.main',
+                }}
+              >
+                {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+              </Avatar>
+            </IconButton>
+          </Stack>
 
           {/* 사용자 프로필 메뉴 */}
           <Menu
@@ -248,8 +371,8 @@ export default function AppsPage() {
                   overflow: 'visible',
                   filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
                   mt: 1,
-                  border: '1px solid',
-                  borderColor: 'grey.200',
+            border: '1px solid',
+            borderColor: 'grey.200',
                 },
               },
             }}
@@ -257,17 +380,17 @@ export default function AppsPage() {
             {/* 사용자 정보 섹션 */}
             <Box sx={{ px: 2, py: 2 }}>
               <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar
-                  alt={user?.displayName || 'User'}
-                  sx={{
+            <Avatar
+              alt={user?.displayName || 'User'}
+              sx={{
                     width: 56,
                     height: 56,
-                    bgcolor: 'primary.main',
+                bgcolor: 'primary.main',
                     fontSize: '1.5rem',
-                  }}
-                >
-                  {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                </Avatar>
+              }}
+            >
+              {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+            </Avatar>
                 <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
               <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="subtitle1" fontWeight={500} noWrap>
@@ -308,6 +431,169 @@ export default function AppsPage() {
           </Menu>
         </Box>
       </Box>
+
+      {/* 출석 체크 다이얼로그 */}
+      <Menu
+        anchorEl={attendanceAnchorEl}
+        open={openAttendanceDialog}
+        onClose={handleCloseAttendanceDialog}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        slotProps={{
+          paper: {
+            sx: {
+              minWidth: 300,
+              maxWidth: 320,
+              borderRadius: 2,
+              mt: 1,
+            },
+          },
+        }}
+      >
+        <Box sx={{ px: 2, pt: 2, pb: 1 }}>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{
+              mb: 1,
+              textAlign: 'center',
+              fontSize: '1.1rem',
+              fontWeight: 600,
+            }}
+          >
+            Smile
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 1,
+            }}
+          >
+            <SmileIcon size={40} filled={true} />
+          </Box>
+          {isLoadingAttendance ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+          {/* 요일 레이블 */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(7, 1fr)',
+              gap: 0.5,
+              mb: 1,
+              textAlign: 'center',
+            }}
+          >
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
+              <Typography
+                key={index}
+                variant="caption"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: '0.7rem',
+                }}
+              >
+                {day}
+              </Typography>
+            ))}
+          </Box>
+
+          {/* 출석 그리드 (4주 = 28일) */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(7, 1fr)',
+              gap: 0.75,
+              mb: 1,
+            }}
+          >
+                {(() => {
+                  const today = new Date();
+                  const days: { date: Date; dateString: string; isAttended: boolean }[] = [];
+
+                  // 최근 28일 생성
+                  for (let i = 27; i >= 0; i--) {
+                    const date = new Date(today);
+                    date.setDate(today.getDate() - i);
+                    const dateString = date.toISOString().split('T')[0];
+                    const isAttended = attendanceRecords.some((r) => r.date === dateString);
+                    days.push({ date, dateString, isAttended });
+                  }
+
+                  return days.map((day, index) => {
+                    const isToday = day.dateString === today.toISOString().split('T')[0];
+                    return (
+                      <Box
+                        key={index}
+                        sx={{
+                          width: '100%',
+                          aspectRatio: '1',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          position: 'relative',
+                          opacity: day.isAttended ? 1 : 0.3,
+                        }}
+                      >
+                        <SmileIcon
+                          size={20}
+                          filled={day.isAttended}
+                        />
+                        {isToday && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: -4,
+                              right: -4,
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              backgroundColor: '#FF0000',
+                              border: '2px solid white',
+                            }}
+                          />
+                        )}
+                      </Box>
+                    );
+                  });
+                })()}
+              </Box>
+            </>
+          )}
+        </Box>
+
+        <Divider />
+
+        <Box sx={{ px: 2, py: 1.5, textAlign: 'center' }}>
+          <Button
+            variant="contained"
+            onClick={handleCheckAttendance}
+            disabled={isTodayChecked || isCheckingAttendance}
+            fullWidth
+            size="small"
+            sx={{
+              py: 0.75,
+              borderRadius: 1.5,
+              fontSize: '0.875rem',
+              fontWeight: 500,
+            }}
+          >
+            {isCheckingAttendance ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : isTodayChecked ? (
+              '오늘 출석 완료!'
+            ) : (
+              '출석하기'
+            )}
+          </Button>
+        </Box>
+      </Menu>
 
       {/* 앱 아이콘 그리드 - 헤더 제외한 나머지 영역에서 중앙 정렬 */}
       <Box
@@ -366,8 +652,8 @@ export default function AppsPage() {
                     '&:active': {
                       transform: app.disabled ? 'none' : 'scale(0.98)',
                     },
-                  }}
-                >
+          }}
+        >
                   <IconComponent
                     sx={{
                       color: iconColor,
@@ -384,7 +670,7 @@ export default function AppsPage() {
                     }}
                   >
                     {app.name}
-                  </Typography>
+          </Typography>
                 </Box>
               </Fade>
             );
